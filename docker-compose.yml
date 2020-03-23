@@ -12,7 +12,7 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.coroner.rule=Host(`coroner.ulv.no`)"
+      - "traefik.http.routers.coroner.rule=Host(`coroner.ulv.io`)"
       - "traefik.http.routers.coroner.tls=true"
       - "traefik.http.routers.coroner.tls.certresolver=le"
 
