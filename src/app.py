@@ -34,7 +34,7 @@ class Coroner:
     def run(self):
         LOG.info('Starting Coroner')
 
-        run_app(self.app)
+        run_app(self.app, host='0.0.0.0')
 
     async def on_startup(self, app):
         LOG.info('Starting periodic tasks')
