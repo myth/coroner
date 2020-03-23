@@ -1,0 +1,59 @@
+kind: pipeline
+name: build
+
+steps:
+  # Install dependencies and test the python code
+  - name: overflow
+    image: plugins/docker
+    settings:
+        username:
+          from_secret: docker_username
+        password:
+          from_secret: docker_password
+        repo: mythern/coroner
+        context: .
+        cache_from:
+          - mythern/coroner:latest
+    when:
+        event: [push]
+    volumes:
+      - name: docker-socket
+        host:
+            path: /var/run/docker.sock:/var/run/docker.sock
+
+  # Copy compose-file
+  - name: configure
+    image: appleboy/drone-scp
+    settings:
+        host: aegis.ulv.io
+        port: 22011
+        username: root
+        key:
+          from_secret: ssh_key
+        target: /srv/www/coroner/
+        source: docker-compose.yml
+    when:
+        event: [push]
+
+  # Pull fresh images, restart, cleanup and report status
+  - name: deploy
+    image: appleboy/drone-ssh
+    settings:
+        host: aegis.ulv.io
+        port: 22011
+        username: root
+        key:
+          from_secret: ssh_key
+        command_timeout: 600s
+        script:
+        - cd /srv/www/coroner
+        - sed -i '/build:/d' docker-compose.yml
+        - sed -i '/dockerfile:/d' docker-compose.yml
+        - sed -i '/context:/d' docker-compose.yml
+        - docker-compose pull
+        - docker-compose down
+        - docker-compose up -d -t 600
+        - docker image prune -f
+        - docker-compose ps
+    when:
+        event: [push]
