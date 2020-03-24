@@ -1,0 +1,20 @@
+html,
+body {
+    font-family: Verdana, sans-serif;
+}
+
+h1 {
+    margin: 50px 0px;
+    font-size: 2rem;
+    text-align: center;
+}
+
+#stats {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex {
+    display: flex;
+    justify-content: center;
+}

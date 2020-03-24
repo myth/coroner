@@ -1,4 +1,5 @@
 from logging import basicConfig, getLogger, DEBUG
+from os.path import abspath, dirname, join
 from weakref import WeakSet
 
 from aiohttp import WSCloseCode
@@ -25,6 +26,7 @@ class Coroner:
         LOG.debug('Setting up routes')
 
         self.app.add_routes(self.ctrl.routes)
+        self.app.router.add_static('/static/', path=join(dirname(abspath(__file__)), 'public/static/'), name='static')
         self.app.on_startup.append(self.on_startup)
         self.app.cleanup_ctx.append(self.ctrl.collector.persistent_session)
         self.app.on_shutdown.append(self.on_shutdown)

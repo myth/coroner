@@ -1,4 +1,5 @@
 from logging import getLogger
+from os.path import abspath, dirname, join
 
 from aiohttp import web
 
@@ -10,11 +11,15 @@ LOG = getLogger(__name__)
 
 class Controller:
     def __init__(self):
+        with open(join(dirname(abspath(__file__)), 'public', 'index.html')) as f:
+            self.index_page = f.read()
+
         self.collector = Collector()
 
-        print(self.collector)
-
         LOG.debug('Controller initialized')
+
+    async def index(self, request):
+        return web.Response(text=self.index_page, content_type='text/html')
 
     async def api(self, request):
         return web.json_response(self.collector.stats)
@@ -37,6 +42,7 @@ class Controller:
     @property
     def routes(self):
         return [
+            web.get('/', self.index),
             web.get('/api', self.api),
             web.get('/ws', self.websocket)
         ]

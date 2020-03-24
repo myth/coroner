@@ -173,10 +173,32 @@ class Collector:
         LOG.debug('Updating statistics')
 
         history = []
-        combined = case_history
+        combined = {}
 
-        for k in combined:
-            combined[k]['tested'] = 0
+        dates = list(case_history) + list(hospital_history) + list(test_history)
+
+        for d in dates:
+            combined[d] = {
+                'confirmed': 0,
+                'new_confirmed': 0,
+                'confirmed_growth_factor': 0.0,
+                'dead': 0,
+                'new_dead': 0,
+                'dead_growth_factor': 0.0,
+                'tested': 0,
+                'tested_growth_factor': 0.0,
+                'hospitalized': 0,
+                'hospitalized_growth_factor': 0.0,
+                'hospitalized_critical': 0,
+                'hospitalized_critical_growth_factor': 0.0,
+                'hospital_staff_infected': 0,
+                'hospital_staff_infected_growth_factor': 0.0,
+                'hospital_staff_quarantined': 0,
+                'hospital_staff_quarantined_growth_factor': 0.0,
+            }
+
+        for k, v in case_history.items():
+            combined[k].update(v)
 
         for k, v in hospital_history.items():
             combined[k].update(v)
@@ -212,15 +234,8 @@ class Collector:
     def _add_diff_metrics(self, history, current):
         LOG.debug('Adding growth factors')
 
-        history[0].update({
-            'confirmed_growth_factor': 0.0,
-            'dead_growth_factor': 0.0,
-            'tested_growth_factor': 0.0,
-            'hospitalized_growth_factor': 0.0,
-            'hospitalized_critical_growth_factor': 0.0,
-            'hospital_staff_infected_growth_factor': 0.0,
-            'hospital_staff_quarantined_growth_factor': 0.0,
-        })
+        history[-1]['confirmed'] = current['confirmed']
+        history[-1]['dead'] = current['dead']
 
         for i in range(1, len(history)):
             gf = {
