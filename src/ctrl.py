@@ -11,7 +11,6 @@ LOG = getLogger(__name__)
 class Controller:
     def __init__(self):
         self.collector = Collector()
-        self.collector.load_previous_stats()
 
         print(self.collector)
 

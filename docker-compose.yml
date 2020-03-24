@@ -5,6 +5,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
+    container_name: coroner
     image: mythern/coroner
     restart: unless-stopped
     networks:
