@@ -3,7 +3,7 @@ name: build
 
 steps:
   # Install dependencies and test the python code
-  - name: overflow
+  - name: build
     image: plugins/docker
     settings:
         username:
