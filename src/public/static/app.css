@@ -5,6 +5,17 @@ body {
     color: #aaa;
 }
 
+a,
+a:visited {
+    color: #4e7cdf;
+    text-decoration: none;
+}
+a:active,
+a:hover {
+    color: #7fa3f1;
+    text-decoration: underline;
+}
+
 h1 {
     margin: 50px 0px;
     font-size: 2rem;
@@ -19,4 +30,8 @@ h1 {
 .flex {
     display: flex;
     justify-content: center;
+}
+
+#footer {
+    margin: 50px 0px;
 }
