@@ -62,6 +62,7 @@ const createChart = (opts, datasets, labels) => {
 const updateCurrent = data => {
     const c = data['current']
 
+    const updated = document.getElementById('last-update')
     const confirmed = document.getElementById('counter-confirmed')
     const newConfirmed = document.getElementById('counter-new-confirmed')
     const dead = document.getElementById('counter-dead')
@@ -75,6 +76,7 @@ const updateCurrent = data => {
     const populationCases = document.getElementById('counter-cases-in-population')
     const populationTested = document.getElementById('counter-tested-in-population')
 
+    updated.innerHTML = `Updated ${data['updated']}`
     confirmed.innerHTML = c['confirmed']
     newConfirmed.innerHTML = c['new_confirmed']
     dead.innerHTML = c['dead']

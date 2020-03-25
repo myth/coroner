@@ -1,4 +1,5 @@
 from asyncio import create_task, sleep
+from datetime import datetime
 from logging import getLogger
 
 from aiohttp import ClientSession
@@ -225,7 +226,8 @@ class Collector:
 
         new_stats = {
             'current': new_current,
-            'history': history
+            'history': history,
+            'updated': datetime.now().isoformat()
         }
 
         self.stats = new_stats

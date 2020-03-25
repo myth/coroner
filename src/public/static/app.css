@@ -29,6 +29,13 @@ h2 {
     color: rgb(184, 146, 75)
 }
 
+h3 {
+    margin-top: 15px;
+    font-size: 0.8rem;
+    text-align: center;
+    color: #666;
+}
+
 #stats {
     display: flex;
     flex-direction: column;
