@@ -171,13 +171,13 @@ const loadData = async() => {
         const confirmedGrowthFactorChart = createChart(
             { element: 'confirmedGrowthFactor', title: 'Total Confirmed Cases (14 day window)' },
             [{
-                label: 'Total Cases (%)',
+                label: 'Daily Increase (%)',
                 data: data['history'].slice(
                     data['history'].length - 14, data['history'].length
                 ).map(
                     d => (d['confirmed_growth_factor'] - 1.0) * 100
                 ),
-                fill: false,
+                fill: true,
                 borderColor: ORANGE_BORDER,
                 backgroundColor: ORANGE
             }],
@@ -185,9 +185,9 @@ const loadData = async() => {
         )
 
         const newConfirmedGrowthFactorChart = createChart(
-            { element: 'newConfirmedGrowthFactor', title: 'Daily Change (14 day window)' },
+            { element: 'newConfirmedGrowthFactor', title: 'New Cases (14 day window)' },
             [{
-                label: 'New Cases (%)',
+                label: 'Daily Change (%)',
                 data: data['history'].slice(
                     data['history'].length - 14, data['history'].length
                 ).map(
@@ -198,6 +198,33 @@ const loadData = async() => {
                 backgroundColor: BLUE
             }],
             data['history'].slice(data['history'].length - 14, data['history'].length).map(d => d['date'].slice(5, 10)),
+        )
+
+        const hospitalGrowthFactorChart = createChart(
+            { element: 'hospitalGrowthFactor', title: 'Daily Hospitalization Increase (7 day window)' },
+            [{
+                label: 'Regular (%)',
+                data: data['history'].slice(
+                    data['history'].length - 7, data['history'].length
+                ).map(
+                    d => (d['hospitalized_growth_factor'] - 1.0) * 100
+                ),
+                fill: true,
+                borderColor: PURPLE_BORDER,
+                backgroundColor: PURPLE
+            },
+            {
+                label: 'Critical (%)',
+                data: data['history'].slice(
+                    data['history'].length - 7, data['history'].length
+                ).map(
+                    d => (d['hospitalized_critical_growth_factor'] - 1.0) * 100
+                ),
+                fill: true,
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE
+            }],
+            data['history'].slice(data['history'].length - 7, data['history'].length).map(d => d['date'].slice(5, 10)),
         )
     })
 }
