@@ -38,6 +38,31 @@ h2 {
     display: flex;
     justify-content: center;
 }
+.flex-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.counter-group {
+    width: 400px;
+    margin-bottom: 50px;
+}
+
+.counter {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 30px;
+}
+
+.counter-name {
+    font-size: 1.1rem;
+}
+
+.counter-value {
+    font-size: 1.5rem;
+    color: cadetblue;
+    text-decoration: bold;
+}
 
 #footer {
     margin: 50px 0px;

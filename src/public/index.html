@@ -21,6 +21,52 @@
   <main id="stats">
     <h2>Reference Numbers</h2>
     <div class="flex">
+      <div class="counter-group">
+        <div class="counter">
+          <div class="counter-name">Total Cases</div>
+          <div class="counter-value" id="counter-confirmed"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">New Cases</div>
+          <div class="counter-value" id="counter-new-confirmed"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">Total Dead</div>
+          <div class="counter-value" id="counter-dead"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">New Dead</div>
+          <div class="counter-value" id="counter-new-dead"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">Tested</div>
+          <div class="counter-value" id="counter-tested"></div>
+        </div>
+      </div>
+      <div class="counter-group">
+        <div class="counter">
+          <div class="counter-name">Hospitalized</div>
+          <div class="counter-value" id="counter-hospitalized"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">Hospitalized (Critical)</div>
+          <div class="counter-value" id="counter-hospitalized-critical"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">Infected Hospital Staff</div>
+          <div class="counter-value" id="counter-hospital-staff-infected"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">Quarantined Hospital Staff</div>
+          <div class="counter-value" id="counter-hospital-staff-quarantined"></div>
+        </div>
+        <div class="counter">
+          <div class="counter-name">Population</div>
+          <div class="counter-value" id="counter-population"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flex">
       <canvas id="confirmed" width="400" height="300"></canvas>
       <canvas id="newConfirmed" width="400" height="300"></canvas>
     </div>

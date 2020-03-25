@@ -59,9 +59,35 @@ const createChart = (opts, datasets, labels) => {
     })
 }
 
+const updateCurrent = data => {
+    const confirmed = document.getElementById('counter-confirmed')
+    const newConfirmed = document.getElementById('counter-new-confirmed')
+    const dead = document.getElementById('counter-dead')
+    const newDead = document.getElementById('counter-new-dead')
+    const tested = document.getElementById('counter-tested')
+    const hospitalized = document.getElementById('counter-hospitalized')
+    const hospitalizedCritical = document.getElementById('counter-hospitalized-critical')
+    const hospitalStaffInfected = document.getElementById('counter-hospital-staff-infected')
+    const hospitalStaffQuarantined = document.getElementById('counter-hospital-staff-quarantined')
+    const population = document.getElementById('counter-population')
+
+    confirmed.innerHTML = data['current']['confirmed']
+    newConfirmed.innerHTML = data['current']['new_confirmed']
+    dead.innerHTML = data['current']['dead']
+    newDead.innerHTML = data['current']['new_dead']
+    tested.innerHTML = data['current']['tested']
+    hospitalized.innerHTML = data['current']['hospitalized']
+    hospitalizedCritical.innerHTML = data['current']['hospitalized_critical']
+    hospitalStaffInfected.innerHTML = data['current']['hospital_staff_infected']
+    hospitalStaffQuarantined.innerHTML = data['current']['hospital_staff_quarantined']
+    population.innerHTML = data['current']['population']
+}
+
 const loadData = async() => {
     fetch('/api').then(async r => {
         const data = await r.json()
+
+        updateCurrent(data)
 
         const confirmedChart = createChart(
             { element: 'confirmed' },
