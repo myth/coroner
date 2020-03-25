@@ -2,12 +2,12 @@
 Chart.defaults.global.elements.point.radius = 2
 Chart.defaults.global.elements.line.borderWidth = 1
 
-const ORANGE = 'rgba(201, 78, 21, 0.8)'
-const RED = 'rgba(209, 29, 29, 0.8)'
-const BLUE = 'rgba(29, 128, 209, 0.8)'
-const GREEN = 'rgba(116, 209, 29, 0.8)'
-const YELLOW = 'rgba(209, 182, 29, 0.8)'
-const PURPLE = 'rgba(136, 26, 209, 0.8)'
+const ORANGE = 'rgba(201, 78, 21, 0.1)'
+const RED = 'rgba(209, 29, 29, 0.1)'
+const BLUE = 'rgba(29, 128, 209, 0.1)'
+const GREEN = 'rgba(116, 209, 29, 0.1)'
+const YELLOW = 'rgba(209, 182, 29, 0.1)'
+const PURPLE = 'rgba(136, 26, 209, 0.1)'
 
 const ORANGE_BORDER = 'rgba(201, 78, 21, 1.0)'
 const RED_BORDER = 'rgba(209, 29, 29, 1.0)'
@@ -41,13 +41,21 @@ const createChart = (opts, datasets, labels) => {
     const ctx = document.getElementById(opts.element).getContext('2d')
     const type = opts.type || 'line'
 
+    const globalOpts = {...options}
+
+    if (opts.log) globalOpts.scales.yAxes[0].type = 'logarithmic'
+    if (opts.title) globalOpts.title = {
+        display: true,
+        text: opts.title
+    }
+
     return new Chart(ctx, {
         type: type,
         data: {
             labels: labels,
             datasets: datasets
         },
-        options: options
+        options: globalOpts
     })
 }
 
@@ -60,8 +68,8 @@ const loadData = async() => {
             [{
                 label: 'Confirmed Cases',
                 data: data['history'].map(d => d['confirmed']),
-                fill: false,
-                borderColor: YELLOW,
+                fill: true,
+                borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW
             }],
             data['history'].map(d => d['date'].slice(5, 10)),
@@ -72,8 +80,8 @@ const loadData = async() => {
             [{
                 label: 'Daily Cases',
                 data: data['history'].map(d => d['new_confirmed']),
-                fill: false,
-                borderColor: BLUE,
+                fill: true,
+                borderColor: BLUE_BORDER,
                 backgroundColor: BLUE,
             }],
             data['history'].map(d => d['date'].slice(5, 10)),
@@ -84,8 +92,8 @@ const loadData = async() => {
             [{
                 label: 'Dead',
                 data: data['history'].map(d => d['dead']),
-                fill: false,
-                borderColor: RED,
+                fill: true,
+                borderColor: RED_BORDER,
                 backgroundColor: RED
             }],
             data['history'].map(d => d['date'].slice(5, 10)),
@@ -96,7 +104,6 @@ const loadData = async() => {
             [{
                 label: 'Daily Deaths',
                 data: data['history'].map(d => d['new_dead']),
-                fill: false,
                 borderColor: RED_BORDER,
                 backgroundColor: 'rgba(209, 29, 29, 0.3)',
                 borderWidth: 1,
@@ -109,16 +116,16 @@ const loadData = async() => {
             [{
                 label: 'Hospitalized',
                 data: data['history'].filter(d => d['hospitalized'] > 0).map(d => d['hospitalized']),
-                fill: false,
+                fill: true,
                 borderColor: PURPLE_BORDER,
                 backgroundColor: PURPLE
             },
             {
                 label: 'Critical',
                 data: data['history'].filter(d => d['hospitalized'] > 0).map(d => d['hospitalized_critical']),
-                fill: false,
+                fill: true,
                 borderColor: ORANGE_BORDER,
-                backgroundColor: ORANGE
+                backgroundColor: 'rgba(201, 78, 21, 0.5)'
             }],
             data['history'].filter(d => d['hospitalized'] > 0).map(d => d['date'].slice(5, 10)),
         )
@@ -128,7 +135,7 @@ const loadData = async() => {
             [{
                 label: 'Hospital Staff Infected',
                 data: data['history'].filter(d => d['hospital_staff_infected'] > 0).map(d => d['hospital_staff_infected']),
-                fill: false,
+                fill: true,
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW
             }],
@@ -140,11 +147,57 @@ const loadData = async() => {
             [{
                 label: 'Hospital Staff Quarantined',
                 data: data['history'].filter(d => d['hospital_staff_quarantined'] > 0).map(d => d['hospital_staff_quarantined']),
-                fill: false,
+                fill: true,
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE
+            }],
+            data['history'].filter(d => d['hospital_staff_quarantined'] > 0).map(d => d['date'].slice(5, 10)),
+        )
+
+        const testedChart = createChart(
+            { element: 'tested' },
+            [{
+                label: 'Tested',
+                data: data['history'].filter(d => d['tested'] > 0).map(d => d['tested']),
+                fill: true,
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN
             }],
             data['history'].filter(d => d['hospital_staff_quarantined'] > 0).map(d => d['date'].slice(5, 10)),
+        )
+
+        // Growth factors
+
+        const confirmedGrowthFactorChart = createChart(
+            { element: 'confirmedGrowthFactor', title: 'Total Confirmed Cases (14 day window)' },
+            [{
+                label: 'Total Cases (%)',
+                data: data['history'].slice(
+                    data['history'].length - 14, data['history'].length
+                ).map(
+                    d => (d['confirmed_growth_factor'] - 1.0) * 100
+                ),
+                fill: false,
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE
+            }],
+            data['history'].slice(data['history'].length - 14, data['history'].length).map(d => d['date'].slice(5, 10)),
+        )
+
+        const newConfirmedGrowthFactorChart = createChart(
+            { element: 'newConfirmedGrowthFactor', title: 'Daily Change (14 day window)' },
+            [{
+                label: 'New Cases (%)',
+                data: data['history'].slice(
+                    data['history'].length - 14, data['history'].length
+                ).map(
+                    d => (d['new_confirmed_growth_factor'] - 1.0) * 100
+                ),
+                fill: true,
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE
+            }],
+            data['history'].slice(data['history'].length - 14, data['history'].length).map(d => d['date'].slice(5, 10)),
         )
     })
 }

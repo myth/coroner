@@ -182,6 +182,7 @@ class Collector:
                 'confirmed': 0,
                 'new_confirmed': 0,
                 'confirmed_growth_factor': 0.0,
+                'new_confirmed_growth_factor': 0.0,
                 'dead': 0,
                 'new_dead': 0,
                 'dead_growth_factor': 0.0,
@@ -240,6 +241,7 @@ class Collector:
         for i in range(1, len(history)):
             gf = {
                 'confirmed_growth_factor': round(history[i]['confirmed'] / max(1, history[i-1]['confirmed']), 3),
+                'new_confirmed_growth_factor': round(history[i]['new_confirmed'] / max(1, history[i-1]['new_confirmed']), 3),
                 'dead_growth_factor': round(history[i]['dead'] / max(1, history[i-1]['dead']), 3),
                 'tested_growth_factor': round(history[i]['tested'] / max(1, history[i-1]['tested']), 3),
                 'hospitalized_growth_factor': round(history[i]['hospitalized'] / max(1, history[i-1]['hospitalized']), 3),
@@ -252,6 +254,7 @@ class Collector:
 
         current.update({
             'confirmed_growth_factor': 1.0 + round(current['new_confirmed'] / current['confirmed'], 3),
+            'new_confirmed_growth_factor': history[-1]['new_confirmed_growth_factor'],
             'dead_growth_factor': 1.0 + round(current['new_dead'] / current['dead'], 3),
             'tested_growth_factor': history[-1]['tested_growth_factor'],
             'hospitalized_growth_factor': history[-1]['hospitalized_growth_factor'],
