@@ -24,20 +24,20 @@
     <div class="flex">
       <div class="counter-group">
         <div class="counter">
-          <div class="counter-name">Total Cases</div>
-          <div class="counter-value" id="counter-confirmed"></div>
+          <div class="counter-name">Total Infected</div>
+          <div class="counter-value" id="counter-infected"></div>
         </div>
         <div class="counter">
-          <div class="counter-name">New Cases</div>
-          <div class="counter-value" id="counter-new-confirmed"></div>
+          <div class="counter-name">Infected Today</div>
+          <div class="counter-value" id="counter-infected-today"></div>
         </div>
         <div class="counter">
-          <div class="counter-name">Total Dead</div>
+          <div class="counter-name">Total Deaths</div>
           <div class="counter-value" id="counter-dead"></div>
         </div>
         <div class="counter">
-          <div class="counter-name">New Dead</div>
-          <div class="counter-value" id="counter-new-dead"></div>
+          <div class="counter-name">Deaths Today</div>
+          <div class="counter-value" id="counter-dead-today"></div>
         </div>
         <div class="counter">
           <div class="counter-name">Tested</div>
@@ -66,7 +66,7 @@
           <div class="counter-value" id="counter-hospital-staff-quarantined"></div>
         </div>
         <div class="counter">
-          <div class="counter-name">Population Cases</div>
+          <div class="counter-name">Population Infected</div>
           <div class="counter-value" id="counter-cases-in-population"></div>
         </div>
         <div class="counter">
@@ -76,12 +76,12 @@
       </div>
     </div>
     <div class="flex">
-      <canvas id="confirmed" width="400" height="300"></canvas>
-      <canvas id="newConfirmed" width="400" height="300"></canvas>
+      <canvas id="infected" width="400" height="300"></canvas>
+      <canvas id="infectedToday" width="400" height="300"></canvas>
     </div>
     <div class="flex">
       <canvas id="dead" width="400" height="300"></canvas>
-      <canvas id="newDead" width="400" height="300"></canvas>
+      <canvas id="deadToday" width="400" height="300"></canvas>
     </div>
     <div class="flex">
       <canvas id="hospitalized" width="800" height="300"></canvas>
@@ -94,17 +94,8 @@
       <canvas id="tested" width="800" height="300"></canvas>
     </div>
     <h2>Growth Factors</h2>
-    <div class="flex">
-      <canvas id="newConfirmedGrowthFactor" width="800" height="300"></canvas>
-    </div>
-    <div class="flex">
-      <canvas id="confirmedGrowthFactor" width="800" height="300"></canvas>
-    </div>
-    <div class="flex">
-      <canvas id="hospitalGrowthFactor" width="800" height=300"></canvas>
-    </div>
     <div class="flex" id="footer">
-      <p>Made in boredom with data from <a href="https://www.vg.no/spesial/2020/corona/">vg.no</a></p>
+      <p>Made from boredom with data from <a href="https://www.vg.no/spesial/2020/corona/">vg.no</a></p>
     </div>
   </main>
 </body>

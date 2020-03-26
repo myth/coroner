@@ -1,5 +1,5 @@
 // Chart config
-Chart.defaults.global.elements.point.radius = 2
+Chart.defaults.global.elements.point.radius = 3
 Chart.defaults.global.elements.line.borderWidth = 1
 
 const ORANGE = 'rgba(201, 78, 21, 0.1)'
@@ -63,10 +63,10 @@ const updateCurrent = data => {
     const c = data['current']
 
     const updated = document.getElementById('last-update')
-    const confirmed = document.getElementById('counter-confirmed')
-    const newConfirmed = document.getElementById('counter-new-confirmed')
+    const infected = document.getElementById('counter-infected')
+    const infectedToday = document.getElementById('counter-infected-today')
     const dead = document.getElementById('counter-dead')
-    const newDead = document.getElementById('counter-new-dead')
+    const deadToday = document.getElementById('counter-dead-today')
     const tested = document.getElementById('counter-tested')
     const population = document.getElementById('counter-population')
     const hospitalized = document.getElementById('counter-hospitalized')
@@ -77,26 +77,26 @@ const updateCurrent = data => {
     const populationTested = document.getElementById('counter-tested-in-population')
 
     updated.innerHTML = `Updated ${data['updated']}`
-    confirmed.innerHTML = c['confirmed']
-    newConfirmed.innerHTML = c['new_confirmed']
-    dead.innerHTML = c['dead']
-    newDead.innerHTML = c['new_dead']
-    tested.innerHTML = c['tested']
-    population.innerHTML = c['population']
-    hospitalized.innerHTML = c['hospitalized']
-    hospitalizedCritical.innerHTML = c['hospitalized_critical']
-    hospitalStaffInfected.innerHTML = c['hospital_staff_infected']
-    hospitalStaffQuarantined.innerHTML = c['hospital_staff_quarantined']
-    populationCases.innerHTML = `${(c['confirmed'] / c['population'] * 100.0).toFixed(3)} %`
-    populationTested.innerHTML = `${(c['tested'] / c['population'] * 100).toFixed(3)} %`
+    infected.innerHTML = c['infected']['total']
+    infectedToday.innerHTML = c['infected']['today']
+    dead.innerHTML = c['dead']['total']
+    deadToday.innerHTML = c['dead']['today']
+    tested.innerHTML = c['tested']['total']
+    population.innerHTML = c['population']['total']
+    hospitalized.innerHTML = c['hospitalized']['general']['total']
+    hospitalizedCritical.innerHTML = c['hospitalized']['critical']['total']
+    hospitalStaffInfected.innerHTML = c['hospital_staff']['infected']['total']
+    hospitalStaffQuarantined.innerHTML = c['hospital_staff']['quarantined']['total']
+    populationCases.innerHTML = `${c['population']['infected_percent']} %`
+    populationTested.innerHTML = `${c['population']['tested_percent']} %`
 }
 
 const updateCharts = data => {
     createChart(
-        { element: 'confirmed' },
+        { element: 'infected' },
         [{
-            label: 'Confirmed Cases',
-            data: data['history'].map(d => d['confirmed']),
+            label: 'Total Infected',
+            data: data['history'].map(d => d['infected']['total']),
             fill: true,
             borderColor: YELLOW_BORDER,
             backgroundColor: YELLOW
@@ -105,10 +105,10 @@ const updateCharts = data => {
     )
 
     createChart(
-        { element: 'newConfirmed' },
+        { element: 'infectedToday' },
         [{
-            label: 'Daily Cases',
-            data: data['history'].map(d => d['new_confirmed']),
+            label: 'Daily Infected',
+            data: data['history'].map(d => d['infected']['today']),
             fill: true,
             borderColor: BLUE_BORDER,
             backgroundColor: BLUE,
@@ -119,8 +119,8 @@ const updateCharts = data => {
     createChart(
         { element: 'dead' },
         [{
-            label: 'Dead',
-            data: data['history'].map(d => d['dead']),
+            label: 'Total Deaths',
+            data: data['history'].map(d => d['dead']['total']),
             fill: true,
             borderColor: RED_BORDER,
             backgroundColor: RED
@@ -129,10 +129,10 @@ const updateCharts = data => {
     )
 
     createChart(
-        { element: 'newDead', type: 'bar' },
+        { element: 'deadToday', type: 'bar' },
         [{
             label: 'Daily Deaths',
-            data: data['history'].map(d => d['new_dead']),
+            data: data['history'].map(d => d['dead']['today']),
             borderColor: RED_BORDER,
             backgroundColor: 'rgba(209, 29, 29, 0.3)',
             borderWidth: 1,
@@ -140,121 +140,70 @@ const updateCharts = data => {
         data['history'].map(d => d['date'].slice(5, 10)),
     )
 
+    const hData = data['history'].filter(d => d['hospitalized']['general']['total'] > 0)
+
     createChart(
-        { element: 'hospitalized' },
+        { element: 'hospitalized', title: 'Hospitalized' },
         [{
-            label: 'Hospitalized',
-            data: data['history'].filter(d => d['hospitalized'] > 0).map(d => d['hospitalized']),
+            label: 'Total',
+            data: hData.map(d => d['hospitalized']['general']['total']),
             fill: true,
             borderColor: PURPLE_BORDER,
             backgroundColor: PURPLE
         },
         {
             label: 'Critical',
-            data: data['history'].filter(d => d['hospitalized'] > 0).map(d => d['hospitalized_critical']),
+            data: hData.map(d => d['hospitalized']['critical']['total']),
             fill: true,
             borderColor: ORANGE_BORDER,
             backgroundColor: 'rgba(201, 78, 21, 0.5)'
         }],
-        data['history'].filter(d => d['hospitalized'] > 0).map(d => d['date'].slice(5, 10)),
+        hData.map(d => d['date'].slice(5, 10)),
     )
+
+    const hsiData = data['history'].filter(d => d['hospital_staff']['infected']['total'] > 0)
 
     createChart(
         { element: 'hospitalStaffInfected' },
         [{
             label: 'Hospital Staff Infected',
-            data: data['history'].filter(d => d['hospital_staff_infected'] > 0).map(d => d['hospital_staff_infected']),
+            data: hsiData.map(d => d['hospital_staff']['infected']['total']),
             fill: true,
             borderColor: YELLOW_BORDER,
             backgroundColor: YELLOW
         }],
-        data['history'].filter(d => d['hospital_staff_infected'] > 0).map(d => d['date'].slice(5, 10)),
+        hsiData.map(d => d['date'].slice(5, 10)),
     )
+
+    const hsqData = data['history'].filter(d => d['hospital_staff']['quarantined']['total'] > 0)
 
     createChart(
         { element: 'hospitalStaffQuarantined' },
         [{
             label: 'Hospital Staff Quarantined',
-            data: data['history'].filter(d => d['hospital_staff_quarantined'] > 0).map(d => d['hospital_staff_quarantined']),
+            data: hsqData.map(d => d['hospital_staff']['quarantined']['total']),
             fill: true,
             borderColor: BLUE_BORDER,
             backgroundColor: BLUE
         }],
-        data['history'].filter(d => d['hospital_staff_quarantined'] > 0).map(d => d['date'].slice(5, 10)),
+        hsqData.map(d => d['date'].slice(5, 10)),
     )
+
+    const tData = data['history'].filter(d => d['tested']['total'] > 0)
 
     createChart(
         { element: 'tested' },
         [{
             label: 'Tested',
-            data: data['history'].filter(d => d['tested'] > 0).map(d => d['tested']),
+            data: tData.map(d => d['tested']['total']),
             fill: true,
             borderColor: GREEN_BORDER,
             backgroundColor: GREEN
         }],
-        data['history'].filter(d => d['hospital_staff_quarantined'] > 0).map(d => d['date'].slice(5, 10)),
+        tData.map(d => d['date'].slice(5, 10)),
     )
 
     // Growth factors
-
-    createChart(
-        { element: 'confirmedGrowthFactor', title: 'Total Confirmed Cases (14 day window)' },
-        [{
-            label: 'Daily Increase (%)',
-            data: data['history'].slice(
-                data['history'].length - 14, data['history'].length
-            ).map(
-                d => (d['confirmed_growth_factor'] - 1.0) * 100
-            ),
-            fill: true,
-            borderColor: ORANGE_BORDER,
-            backgroundColor: ORANGE
-        }],
-        data['history'].slice(data['history'].length - 14, data['history'].length).map(d => d['date'].slice(5, 10)),
-    )
-
-    createChart(
-        { element: 'newConfirmedGrowthFactor', title: 'New Cases (14 day window)' },
-        [{
-            label: 'Daily Change (%)',
-            data: data['history'].slice(
-                data['history'].length - 14, data['history'].length
-            ).map(
-                d => (d['new_confirmed_growth_factor'] - 1.0) * 100
-            ),
-            fill: true,
-            borderColor: BLUE_BORDER,
-            backgroundColor: BLUE
-        }],
-        data['history'].slice(data['history'].length - 14, data['history'].length).map(d => d['date'].slice(5, 10)),
-    )
-
-    createChart(
-        { element: 'hospitalGrowthFactor', title: 'Daily Hospitalization Increase (7 day window)' },
-        [{
-            label: 'Regular (%)',
-            data: data['history'].slice(
-                data['history'].length - 7, data['history'].length
-            ).map(
-                d => (d['hospitalized_growth_factor'] - 1.0) * 100
-            ),
-            fill: true,
-            borderColor: PURPLE_BORDER,
-            backgroundColor: PURPLE
-        },
-        {
-            label: 'Critical (%)',
-            data: data['history'].slice(
-                data['history'].length - 7, data['history'].length
-            ).map(
-                d => (d['hospitalized_critical_growth_factor'] - 1.0) * 100
-            ),
-            fill: true,
-            borderColor: ORANGE_BORDER,
-            backgroundColor: ORANGE
-        }],
-        data['history'].slice(data['history'].length - 7, data['history'].length).map(d => d['date'].slice(5, 10)),
-    )
 }
 
 const loadData = async() => {

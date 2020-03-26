@@ -1,8 +1,13 @@
 from asyncio import create_task, sleep
 from datetime import datetime
 from logging import getLogger
+from sys import stdout
+from traceback import print_exc
 
 from aiohttp import ClientSession
+
+from models import Stats
+from utils import get_now_local
 
 
 LOG = getLogger(__name__)
@@ -10,24 +15,9 @@ LOG = getLogger(__name__)
 COLLECT_INTERVAL = 60  # Every minute
 
 # Data sources
-VG_OVERVIEW = 'https://redutv-api.vg.no/corona/v1/sheets/norway-table-overview'
 VG_CASES_TS = 'https://redutv-api.vg.no/corona/v1/sheets/norway-region-data?exclude=cases'
 VG_HOSPITALS_TS = 'https://redutv-api.vg.no/corona/v1/areas/country/reports'
 VG_TESTED_TS = 'https://redutv-api.vg.no/corona/v1/sheets/fhi/tested'
-
-
-TMPL = {
-    'confirmed': 0,
-    'new_confirmed': 0,
-    'dead': 0,
-    'new_dead': 0,
-    'tested': 0,
-    'hospitalized': 0,
-    'hospitalized_critical': 0,
-    'hospital_staff_infected': 0,
-    'hospital_staff_quarantined': 0,
-    'population': 5314336
-}
 
 
 class Collector:
@@ -35,10 +25,8 @@ class Collector:
         self.session = None
         self.task = None
         self.running = False
-        self.stats = {
-            'current': { **TMPL },
-            'history': []
-        }
+        self.status = 'ok'
+        self.stats = {}
 
         LOG.debug('Collector initialized')
 
@@ -70,32 +58,22 @@ class Collector:
         while self.running:
             LOG.info('Collecting current stats from vg.no')
 
-            current = await self._collect_current_vg()
-            case_history = await self._collect_case_history_vg()
-            hospital_history = await self._collect_hospital_history_vg()
-            test_history = await self._collect_testing_history_vg()
+            self.status = 'ok'
 
-            LOG.info('Collection of current stats from vg.no complete')
+            try:
+                case_history = await self._collect_case_history_vg()
+                hospital_history = await self._collect_hospital_history_vg()
+                test_history = await self._collect_testing_history_vg()
 
-            self._populate_timeseries(current, case_history, hospital_history, test_history)
+                self._populate_timeseries(case_history, hospital_history, test_history)
+
+                LOG.info('Collection of current stats from vg.no complete')
+            except Exception as e:
+                LOG.error(e)
+                print_exc(file=stdout)
+                self.status = 'error'
 
             await sleep(COLLECT_INTERVAL)
-
-    async def _collect_current_vg(self):
-        async with self.session.get(VG_OVERVIEW) as response:
-            if response.status == 200:
-                data = await response.json()
-
-                current = {
-                    'confirmed': data['totals']['confirmed'],
-                    'new_confirmed': data['totals']['changes']['newToday'],
-                    'dead': data['totals']['dead'],
-                    'new_dead': data['totals']['changes']['deathsToday'],
-                }
-
-                return current
-            else:
-                return {}
 
 
     async def _collect_case_history_vg(self):
@@ -105,22 +83,22 @@ class Collector:
 
                 cases = {}
 
-                confirmed = data['timeseries']['total']['confirmed']
-                new_confirmed = data['timeseries']['new']['confirmed']
+                infected = data['timeseries']['total']['confirmed']
+                infected_new = data['timeseries']['new']['confirmed']
                 dead = data['timeseries']['total']['dead']
-                new_dead = data['timeseries']['new']['dead']
+                dead_new = data['timeseries']['new']['dead']
 
-                for k, v in confirmed.items():
-                    cases[k] = { 'confirmed': v }
+                for k, v in infected.items():
+                    cases[k] = { 'infected': v }
 
-                for k, v in new_confirmed.items():
-                    cases[k]['new_confirmed'] = v
+                for k, v in infected_new.items():
+                    cases[k]['infected_new'] = v
 
                 for k, v in dead.items():
                     cases[k]['dead'] = v
 
-                for k, v in new_dead.items():
-                    cases[k]['new_dead'] = v
+                for k, v in dead_new.items():
+                    cases[k]['dead_new'] = v
 
                 return cases
             else:
@@ -163,40 +141,31 @@ class Collector:
 
                 tested = {}
 
-                for i, tsd in enumerate(data['timeseries']):
-                    tested[tsd['date']] = { 'tested': tsd['count'] if tsd['count'] else data['timeseries'][i - 1]['count'] }
+                for ts in data['timeseries']:
+                    tested[ts['date']] = { 'tested': ts['count'] }
 
                 return tested
             else:
                 return {}
 
-    def _populate_timeseries(self, current, case_history, hospital_history, test_history):
+    def _populate_timeseries(self, case_history, hospital_history, test_history):
         LOG.debug('Updating statistics')
 
-        history = []
         combined = {}
 
-        dates = list(case_history) + list(hospital_history) + list(test_history)
+        dates = sorted(list(case_history) + list(hospital_history) + list(test_history))
 
         for d in dates:
             combined[d] = {
-                'confirmed': 0,
-                'new_confirmed': 0,
-                'confirmed_growth_factor': 0.0,
-                'new_confirmed_growth_factor': 0.0,
+                'infected': 0,
+                'infected_new': 0,
                 'dead': 0,
-                'new_dead': 0,
-                'dead_growth_factor': 0.0,
+                'dead_new': 0,
                 'tested': 0,
-                'tested_growth_factor': 0.0,
                 'hospitalized': 0,
-                'hospitalized_growth_factor': 0.0,
                 'hospitalized_critical': 0,
-                'hospitalized_critical_growth_factor': 0.0,
                 'hospital_staff_infected': 0,
-                'hospital_staff_infected_growth_factor': 0.0,
                 'hospital_staff_quarantined': 0,
-                'hospital_staff_quarantined_growth_factor': 0.0,
             }
 
         for k, v in case_history.items():
@@ -208,59 +177,14 @@ class Collector:
         for k, v in test_history.items():
             combined[k].update(v)
 
-        for day, stats in sorted(combined.items()):
-            history.append({ 'date': day, **stats })
 
+        stats = Stats.assemble(combined)
 
-        new_current = { **TMPL }
-        new_current.update({
-            'tested': history[-1]['tested'],
-            'hospitalized': history[-1]['hospitalized'],
-            'hospitalized_critical': history[-1]['hospitalized_critical'],
-            'hospital_staff_infected': history[-1]['hospital_staff_infected'],
-            'hospital_staff_quarantined': history[-1]['hospital_staff_quarantined'],
-        })
-        new_current.update(current)
-
-        self._add_diff_metrics(history, new_current)
-
-        new_stats = {
-            'current': new_current,
-            'history': history,
-            'updated': datetime.now().isoformat()
+        self.stats = {
+            'status': self.status,
+            'updated': get_now_local().isoformat(),
+            'current': stats[-1].json(),
+            'history': [s.json() for s in stats]
         }
 
-        self.stats = new_stats
-
         LOG.debug('Statistics updated')
-
-    def _add_diff_metrics(self, history, current):
-        LOG.debug('Adding growth factors')
-
-        history[-1]['confirmed'] = current['confirmed']
-        history[-1]['dead'] = current['dead']
-
-        for i in range(1, len(history)):
-            gf = {
-                'confirmed_growth_factor': round(history[i]['confirmed'] / max(1, history[i-1]['confirmed']), 3),
-                'new_confirmed_growth_factor': round(history[i]['new_confirmed'] / max(1, history[i-1]['new_confirmed']), 3),
-                'dead_growth_factor': round(history[i]['dead'] / max(1, history[i-1]['dead']), 3),
-                'tested_growth_factor': round(history[i]['tested'] / max(1, history[i-1]['tested']), 3),
-                'hospitalized_growth_factor': round(history[i]['hospitalized'] / max(1, history[i-1]['hospitalized']), 3),
-                'hospitalized_critical_growth_factor': round(history[i]['hospitalized_critical'] / max(1, history[i-1]['hospitalized_critical']), 3),
-                'hospital_staff_infected_growth_factor': round(history[i]['hospital_staff_infected'] / max(1, history[i-1]['hospital_staff_infected']), 3),
-                'hospital_staff_quarantined_growth_factor': round(history[i]['hospital_staff_quarantined'] / max(1, history[i-1]['hospital_staff_quarantined']), 3),
-            }
-
-            history[i].update(gf)
-
-        current.update({
-            'confirmed_growth_factor': 1.0 + round(current['new_confirmed'] / current['confirmed'], 3),
-            'new_confirmed_growth_factor': history[-1]['new_confirmed_growth_factor'],
-            'dead_growth_factor': 1.0 + round(current['new_dead'] / current['dead'], 3),
-            'tested_growth_factor': history[-1]['tested_growth_factor'],
-            'hospitalized_growth_factor': history[-1]['hospitalized_growth_factor'],
-            'hospitalized_critical_growth_factor': history[-1]['hospitalized_critical_growth_factor'],
-            'hospital_staff_infected_growth_factor': history[-1]['hospital_staff_infected_growth_factor'],
-            'hospital_staff_quarantined_growth_factor': history[-1]['hospital_staff_quarantined_growth_factor'],
-        })
