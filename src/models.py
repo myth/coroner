@@ -67,10 +67,13 @@ def calculate_changes(current: Stats, previous: Stats):
 
 
 def calculate_moving_average(stats: List[Stats], field: str, window: int):
-    for i in range(window, len(stats)):
+    start = window - 1
+
+    for i in range(start, len(stats)):
         s = stats[i]
 
-        ma = round(sum(getattr(obj, field) for obj in stats[i-window:i]) / window, 2)
+        slice = [getattr(obj, field) for obj in stats[i-start:i+1]]
+        ma = round(sum(slice) / window, 2)
 
         setattr(s, f'{field}_mov_avg_{window}', ma)
 
