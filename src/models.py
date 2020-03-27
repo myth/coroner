@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 from logging import getLogger
+from math import log10
 from json import dumps
 from typing import Any, Dict, List
 
-from utils import get_today_local, percent_change
+from utils import doubling_rate, ensure_field, get_today_local, percent_change
 
 LOG = getLogger(__name__)
 POPULATION: int = 5367580
@@ -31,11 +32,15 @@ def create_date_range(data):
 
 def update_from_data(current: Stats, previous: Stats, data: Dict[str, Any]):
     def get_biggest_valid(field: str):
+        ensure_field(previous, field)
+
         if data[field] is not None and data[field] > getattr(previous, field):
             return data[field]
         return getattr(previous, field)
 
     def get_valid(field: str):
+        ensure_field(previous, field)
+
         if data[field] is not None and data[field] > 0:
             return data[field]
         return getattr(previous, field)
@@ -72,10 +77,15 @@ def calculate_moving_average(stats: List[Stats], field: str, window: int):
     for i in range(start, len(stats)):
         s = stats[i]
 
+        ensure_field(s, field)
+
         slice = [getattr(obj, field) for obj in stats[i-start:i+1]]
         ma = round(sum(slice) / window, 2)
 
-        setattr(s, f'{field}_mov_avg_{window}', ma)
+        ma_field = f'{field}_mov_avg_{window}'
+        ensure_field(s, ma_field)
+
+        setattr(s, ma_field, ma)
 
 
 def calculate_moving_averages(stats: List[Stats]):
@@ -97,6 +107,49 @@ def calculate_moving_averages(stats: List[Stats]):
             calculate_moving_average(stats, f, w)
 
 
+def calculate_doubling_rate(stats: List[Stats], field: str, mov_avg_3: bool = False):
+    for i in range(1, len(stats)):
+        current = stats[i]
+        previous = stats[i-1]
+
+        source = field
+
+        if mov_avg_3:
+            source = f'{field}_today_mov_avg_3'
+
+        ensure_field(current, source)
+        ensure_field(previous, source)
+
+        current_val = getattr(current, source)
+        previous_val = getattr(previous, source)
+
+        dr = doubling_rate(current_val, previous_val)
+
+        if mov_avg_3:
+            dr_field = f'{field}_doubling_rate_from_mov_avg_3'
+        else:
+            dr_field = f'{field}_doubling_rate'
+
+        ensure_field(current, dr_field)
+
+        setattr(current, dr_field, dr)
+
+
+def calculate_doubling_rates(stats: List[Stats]):
+    LOG.debug('Calculating doubling rates')
+
+    fields = [
+        'infected',
+        'hospitalized',
+        'hospital_staff_infected'
+    ]
+
+    for f in fields:
+        calculate_doubling_rate(stats, f)
+
+    calculate_doubling_rate(stats, 'infected', mov_avg_3=True)
+
+
 class Stats:
     def __init__(self, day):
         self.date = day
@@ -104,6 +157,8 @@ class Stats:
         self.infected = 0
         self.infected_today = 0
         self.infected_yesterday = 0
+        self.infected_doubling_rate = 0
+        self.infected_doubling_rate_from_mov_avg_3 = 0
         self.infected_today_mov_avg_3 = 0
         self.infected_today_mov_avg_5 = 0
 
@@ -122,6 +177,7 @@ class Stats:
         self.hospitalized = 0
         self.hospitalized_today = 0
         self.hospitalized_yesterday = 0
+        self.hospitalized_doubling_rate = 0
         self.hospitalized_today_mov_avg_3 = 0
         self.hospitalized_today_mov_avg_5 = 0
 
@@ -134,6 +190,7 @@ class Stats:
         self.hospital_staff_infected = 0
         self.hospital_staff_infected_today = 0
         self.hospital_staff_infected_yesterday = 0
+        self.hospital_staff_infected_doubling_rate = 0
         self.hospital_staff_infected_today_mov_avg_3 = 0
         self.hospital_staff_infected_today_mov_avg_5 = 0
 
@@ -144,36 +201,48 @@ class Stats:
         self.hospital_staff_quarantined_today_mov_avg_5 = 0
 
     @property
-    def infected_diff(self):
+    def infected_change_percent(self):
+        return percent_change(self.infected, self.infected - self.infected_today)
+
+    @property
+    def infected_daily_diff(self):
         return self.infected_today - self.infected_yesterday
 
     @property
-    def infected_diff_percent(self):
+    def infected_daily_diff_percent(self):
         return percent_change(
             self.infected_today,
-            self.infected_diff
+            self.infected_yesterday
         )
 
     @property
-    def dead_diff(self):
+    def dead_change_percent(self):
+        return percent_change(self.dead, self.dead - self.dead_today)
+
+    @property
+    def dead_daily_diff(self):
         return self.dead_today - self.dead_yesterday
 
     @property
-    def dead_diff_percent(self):
+    def dead_daily_diff_percent(self):
         return percent_change(
             self.dead_today,
-            self.dead_diff
+            self.dead_yesterday
         )
 
     @property
-    def tested_diff(self):
+    def tested_change_percent(self):
+        return percent_change(self.tested, self.tested - self.tested_today)
+
+    @property
+    def tested_daily_diff(self):
         return self.tested_today - self.tested_yesterday
 
     @property
-    def tested_diff_percent(self):
+    def tested_daily_diff_percent(self):
         return percent_change(
             self.tested_today,
-            self.tested_diff
+            self.tested_yesterday
         )
 
     @property
@@ -184,47 +253,63 @@ class Stats:
         return round(self.infected / self.tested * 100, 2)
 
     @property
-    def hospitalized_diff(self):
+    def hospitalized_change_percent(self):
+        return percent_change(self.hospitalized, self.hospitalized - self.hospitalized_today)
+
+    @property
+    def hospitalized_daily_diff(self):
         return self.hospitalized_today - self.hospitalized_yesterday
 
     @property
-    def hospitalized_diff_percent(self):
+    def hospitalized_daily_diff_percent(self):
         return percent_change(
             self.hospitalized_today,
-            self.hospitalized_diff
+            self.hospitalized_yesterday
         )
 
     @property
-    def hospitalized_critical_diff(self):
+    def hospitalized_critical_change_percent(self):
+        return percent_change(self.hospitalized_critical, self.hospitalized_critical - self.hospitalized_critical_today)
+
+    @property
+    def hospitalized_critical_daily_diff(self):
         return self.hospitalized_critical_today - self.hospitalized_critical_yesterday
 
     @property
-    def hospitalized_critical_diff_percent(self):
+    def hospitalized_critical_daily_diff_percent(self):
         return percent_change(
             self.hospitalized_critical_today,
-            self.hospitalized_critical_diff
+            self.hospitalized_critical_yesterday
         )
 
     @property
-    def hospital_staff_infected_diff(self):
+    def hospital_staff_infected_change_percent(self):
+        return percent_change(self.hospital_staff_infected, self.hospital_staff_infected - self.hospital_staff_infected_today)
+
+    @property
+    def hospital_staff_infected_daily_diff(self):
         return self.hospital_staff_infected_today - self.hospital_staff_infected_yesterday
 
     @property
-    def hospital_staff_infected_diff_percent(self):
+    def hospital_staff_infected_daily_diff_percent(self):
         return percent_change(
             self.hospital_staff_infected_today,
-            self.hospital_staff_infected_diff
+            self.hospital_staff_infected_yesterday
         )
 
     @property
-    def hospital_staff_quarantined_diff(self):
+    def hospital_staff_quarantined_change_percent(self):
+        return percent_change(self.hospital_staff_quarantined, self.hospital_staff_quarantined - self.hospital_staff_quarantined_today)
+
+    @property
+    def hospital_staff_quarantined_daily_diff(self):
         return self.hospital_staff_quarantined_today - self.hospital_staff_quarantined_yesterday
 
     @property
-    def hospital_staff_quarantined_diff_percent(self):
+    def hospital_staff_quarantined_daily_diff_percent(self):
         return percent_change(
             self.hospital_staff_quarantined_today,
-            self.hospital_staff_quarantined_diff
+            self.hospital_staff_quarantined_yesterday
         )
 
     @property
@@ -246,8 +331,11 @@ class Stats:
                 'total': self.infected,
                 'today': self.infected_today,
                 'yesterday': self.infected_yesterday,
-                'diff': self.infected_diff,
-                'diff_percent': self.infected_diff_percent,
+                'doubling_rate': self.infected_doubling_rate,
+                'doubling_rate_from_mov_avg_3': self.infected_doubling_rate_from_mov_avg_3,
+                'change_percent': self.infected_change_percent,
+                'daily_diff': self.infected_daily_diff,
+                'daily_diff_percent': self.infected_daily_diff_percent,
                 'today_mov_avg_3': self.infected_today_mov_avg_3,
                 'today_mov_avg_5': self.infected_today_mov_avg_5,
             },
@@ -255,8 +343,9 @@ class Stats:
                 'total': self.dead,
                 'today': self.dead_today,
                 'yesterday': self.dead_yesterday,
-                'diff': self.dead_diff,
-                'diff_percent': self.dead_diff_percent,
+                'change_percent': self.dead_change_percent,
+                'daily_diff': self.dead_daily_diff,
+                'daily_diff_percent': self.dead_daily_diff_percent,
                 'today_mov_avg_3': self.dead_today_mov_avg_3,
                 'today_mov_avg_5': self.dead_today_mov_avg_5,
                 'mortality_percent': self.mortality_percent,
@@ -265,8 +354,9 @@ class Stats:
                 'total': self.tested,
                 'today': self.tested_today,
                 'yesterday': self.tested_yesterday,
-                'diff': self.tested_diff,
-                'diff_percent': self.tested_diff_percent,
+                'change_percent': self.tested_change_percent,
+                'daily_diff': self.tested_daily_diff,
+                'daily_diff_percent': self.tested_daily_diff_percent,
                 'hit_ratio_percent': self.tested_hit_ratio_percent,
                 'today_mov_avg_3': self.tested_today_mov_avg_3,
                 'today_mov_avg_5': self.tested_today_mov_avg_5,
@@ -276,8 +366,10 @@ class Stats:
                     'total': self.hospitalized,
                     'today': self.hospitalized_today,
                     'yesterday': self.hospitalized_yesterday,
-                    'diff': self.hospitalized_diff,
-                    'diff_percent': self.hospitalized_diff_percent,
+                    'doubling_rate': self.hospitalized_doubling_rate,
+                    'change_percent': self.hospitalized_change_percent,
+                    'daily_diff': self.hospitalized_daily_diff,
+                    'daily_diff_percent': self.hospitalized_daily_diff_percent,
                     'today_mov_avg_3': self.hospitalized_today_mov_avg_3,
                     'today_mov_avg_5': self.hospitalized_today_mov_avg_5,
                 },
@@ -285,8 +377,9 @@ class Stats:
                     'total': self.hospitalized_critical,
                     'today': self.hospitalized_critical_today,
                     'yesterday': self.hospitalized_critical_yesterday,
-                    'diff': self.hospitalized_critical_diff,
-                    'diff_percent': self.hospitalized_critical_diff_percent,
+                    'change_percent': self.hospitalized_critical_change_percent,
+                    'daily_diff': self.hospitalized_critical_daily_diff,
+                    'daily_diff_percent': self.hospitalized_critical_daily_diff_percent,
                     'today_mov_avg_3': self.hospitalized_critical_today_mov_avg_3,
                     'today_mov_avg_5': self.hospitalized_critical_today_mov_avg_5,
                 }
@@ -296,8 +389,10 @@ class Stats:
                     'total': self.hospital_staff_infected,
                     'today': self.hospital_staff_infected_today,
                     'yesterday': self.hospital_staff_infected_yesterday,
-                    'diff': self.hospital_staff_infected_diff,
-                    'diff_percent': self.hospital_staff_infected_diff_percent,
+                    'doubling_rate': self.hospital_staff_infected_doubling_rate,
+                    'change_percent': self.hospital_staff_infected_change_percent,
+                    'daily_diff': self.hospital_staff_infected_daily_diff,
+                    'daily_diff_percent': self.hospital_staff_infected_daily_diff_percent,
                     'today_mov_avg_3': self.hospital_staff_infected_today_mov_avg_3,
                     'today_mov_avg_5': self.hospital_staff_infected_today_mov_avg_5,
                 },
@@ -305,8 +400,9 @@ class Stats:
                     'total': self.hospital_staff_quarantined,
                     'today': self.hospital_staff_quarantined_today,
                     'yesterday': self.hospital_staff_quarantined_yesterday,
-                    'diff': self.hospital_staff_quarantined_diff,
-                    'diff_percent': self.hospital_staff_quarantined_diff_percent,
+                    'change_percent': self.hospital_staff_quarantined_change_percent,
+                    'daily_diff': self.hospital_staff_quarantined_daily_diff,
+                    'daily_diff_percent': self.hospital_staff_quarantined_daily_diff_percent,
                     'today_mov_avg_3': self.hospital_staff_quarantined_today_mov_avg_3,
                     'today_mov_avg_5': self.hospital_staff_quarantined_today_mov_avg_5,
                 }
@@ -347,6 +443,7 @@ class Stats:
             calculate_changes(stats[i], stats[i-1])
 
         calculate_moving_averages(stats)
+        calculate_doubling_rates(stats)
 
         return stats
 

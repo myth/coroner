@@ -221,7 +221,7 @@ const updateCharts = data => {
         { element: 'infectedChangePercent', title: 'Daily New Infections (14 day window)' },
         [{
             label: 'Change (%)',
-            data: icpData.map(d => d['infected']['diff_percent']),
+            data: icpData.map(d => d['infected']['daily_diff_percent']),
             fill: true,
             borderColor: YELLOW_BORDER,
             backgroundColor: YELLOW
@@ -254,7 +254,7 @@ const updateCharts = data => {
         { element: 'testedChangePercent', title: 'Daily New Tests (7 day window)' },
         [{
             label: 'Change (%)',
-            data: tcpData.map(d => d['tested']['diff_percent']),
+            data: tcpData.map(d => d['tested']['daily_diff_percent']),
             fill: true,
             borderColor: GREEN_BORDER,
             backgroundColor: GREEN
@@ -282,14 +282,14 @@ const updateCharts = data => {
         { element: 'hospitalizedChangePercent', title: 'Daily Hospitalization (14 day window)' },
         [{
             label: 'General (%)',
-            data: hcpData.map(d => d['hospitalized']['general']['diff_percent']),
+            data: hcpData.map(d => d['hospitalized']['general']['daily_diff_percent']),
             fill: true,
             borderColor: PURPLE_BORDER,
             backgroundColor: PURPLE
         },
         {
             label: 'Critical (%)',
-            data: hcpData.map(d => d['hospitalized']['critical']['diff_percent']),
+            data: hcpData.map(d => d['hospitalized']['critical']['daily_diff_percent']),
             fill: true,
             borderColor: ORANGE_BORDER,
             backgroundColor: 'rgba(201, 78, 21, 0.5)'
@@ -324,7 +324,7 @@ const updateCharts = data => {
         { element: 'hospitalStaffInfectedChange', title: 'Daily Hospital Staff Infected' },
         [{
             label: 'Daily Change',
-            data: hsicpData.map(d => d['hospital_staff']['infected']['diff']),
+            data: hsicpData.map(d => d['hospital_staff']['infected']['daily_diff']),
             fill: true,
             borderColor: BLUE_BORDER,
             backgroundColor: BLUE
