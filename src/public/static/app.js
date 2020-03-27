@@ -65,40 +65,32 @@ const createChart = (opts, datasets, labels) => {
     })
 }
 
+const setElementContent = (id, value) => {
+    document.getElementById(id).innerHTML = value
+}
+
 const updateCurrent = data => {
     const c = data['current']
 
-    const updated = document.getElementById('last-update')
-    const infected = document.getElementById('counter-infected')
-    const infectedToday = document.getElementById('counter-infected-today')
-    const dead = document.getElementById('counter-dead')
-    const deadToday = document.getElementById('counter-dead-today')
-    const tested = document.getElementById('counter-tested')
-    const population = document.getElementById('counter-population')
-    const hospitalized = document.getElementById('counter-hospitalized')
-    const hospitalizedCritical = document.getElementById('counter-hospitalized-critical')
-    const hospitalStaffInfected = document.getElementById('counter-hospital-staff-infected')
-    const hospitalStaffQuarantined = document.getElementById('counter-hospital-staff-quarantined')
-    const populationCases = document.getElementById('counter-cases-in-population')
-    const populationTested = document.getElementById('counter-tested-in-population')
-    const mortalityRate = document.getElementById('counter-mortality-rate')
-    const testedHitRatio = document.getElementById('counter-tested-hit-ratio')
-
-    updated.innerHTML = `Updated ${data['updated']}`
-    infected.innerHTML = c['infected']['total']
-    infectedToday.innerHTML = c['infected']['today']
-    dead.innerHTML = c['dead']['total']
-    deadToday.innerHTML = c['dead']['today']
-    tested.innerHTML = c['tested']['total']
-    population.innerHTML = c['population']['total']
-    hospitalized.innerHTML = c['hospitalized']['general']['total']
-    hospitalizedCritical.innerHTML = c['hospitalized']['critical']['total']
-    hospitalStaffInfected.innerHTML = c['hospital_staff']['infected']['total']
-    hospitalStaffQuarantined.innerHTML = c['hospital_staff']['quarantined']['total']
-    populationCases.innerHTML = `${c['population']['infected_percent']} %`
-    populationTested.innerHTML = `${c['population']['tested_percent']} %`
-    mortalityRate.innerHTML = `${c['dead']['mortality_percent']} %`
-    testedHitRatio.innerHTML = `${c['tested']['hit_ratio_percent']} %`
+    setElementContent('last-update', `Updated ${data['updated']}`)
+    setElementContent('counter-infected', c['infected']['total'])
+    setElementContent('counter-infected-today', c['infected']['today'])
+    setElementContent('counter-infected-change-percent', `${c['infected']['change_percent']} %`)
+    setElementContent('counter-dead', c['dead']['total'])
+    setElementContent('counter-dead-today', c['dead']['today'])
+    setElementContent('counter-tested', c['tested']['total'])
+    setElementContent('counter-population', c['population']['total'])
+    setElementContent('counter-hospitalized', c['hospitalized']['general']['total'])
+    setElementContent('counter-hospitalized-doubling-rate', `${c['hospitalized']['general']['doubling_rate']} days`)
+    setElementContent('counter-hospitalized-critical', c['hospitalized']['critical']['total'])
+    setElementContent('counter-hospital-staff-infected', c['hospital_staff']['infected']['total'])
+    setElementContent('counter-hospital-staff-quarantined', c['hospital_staff']['quarantined']['total'])
+    setElementContent('counter-cases-in-population', `${c['population']['infected_percent']} %`)
+    setElementContent('counter-tested-in-population', `${c['population']['tested_percent']} %`)
+    setElementContent('counter-mortality-rate', `${c['dead']['mortality_percent']} %`)
+    setElementContent('counter-tested-hit-ratio', `${c['tested']['hit_ratio_percent']} %`)
+    setElementContent('counter-infected-doubling-rate', `${c['infected']['doubling_rate']} days`)
+    setElementContent('counter-infected-doubling-rate-ma3', `${c['infected']['doubling_rate_from_mov_avg_3']} days`)
 }
 
 const updateCharts = data => {
@@ -248,6 +240,25 @@ const updateCharts = data => {
         data['history'].map(d => d['date'].slice(5, 10)),
     )
 
+    createChart(
+        { element: 'infectedDoublingRate', title: 'Infection Doubling Rate' },
+        [{
+            label: 'Standard (days)',
+            data: data['history'].map(d => d['infected']['doubling_rate']),
+            fill: true,
+            borderColor: ORANGE_BORDER,
+            backgroundColor: ORANGE
+        },
+        {
+            label: '3 Day Moving Average (days)',
+            data: data['history'].map(d => d['infected']['doubling_rate_from_mov_avg_3']),
+            fill: true,
+            borderColor: YELLOW_BORDER,
+            backgroundColor: YELLOW
+        }],
+        data['history'].map(d => d['date'].slice(5, 10)),
+    )
+
     const tcpData = getLastNumDays(data, 7)
 
     createChart(
@@ -318,6 +329,20 @@ const updateCharts = data => {
         hmaData.map(d => d['date'].slice(5, 10)),
     )
 
+    const hdrData = getLastNumDays(data, 14).filter(d => d['hospitalized']['general']['today'] > 0)
+
+    createChart(
+        { element: 'hospitalizedDoublingRate', title: 'Hospitalization Doubling Rate (Higher is better) (14 day window)' },
+        [{
+            label: 'Doubling Rate (days)',
+            data: hdrData.map(d => d['hospitalized']['general']['doubling_rate']),
+            fill: true,
+            borderColor: PURPLE_BORDER,
+            backgroundColor: PURPLE
+        }],
+        hdrData.map(d => d['date'].slice(5, 10)),
+    )
+
     const hsicpData = getLastNumDays(data, 14)
 
     createChart(
@@ -330,6 +355,20 @@ const updateCharts = data => {
             backgroundColor: BLUE
         }],
         hsicpData.map(d => d['date'].slice(5, 10)),
+    )
+
+    const hsidrData = getLastNumDays(data, 14)
+
+    createChart(
+        { element: 'hospitalStaffInfectedDoublingRate', title: 'Hospital Staff Infected Doubling Rate (Higher is better) (14 day window)' },
+        [{
+            label: 'Doubling Rate (days)',
+            data: hsidrData.map(d => d['hospital_staff']['infected']['doubling_rate']),
+            fill: true,
+            borderColor: YELLOW_BORDER,
+            backgroundColor: YELLOW
+        }],
+        hsidrData.map(d => d['date'].slice(5, 10)),
     )
 }
 

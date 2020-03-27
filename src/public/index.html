@@ -23,63 +23,79 @@
     <h2>Reference Numbers (Norway)</h2>
     <div class="flex">
       <div class="counter-group">
-        <div class="counter">
+        <div class="counter counter-left">
           <div class="counter-name">Total Infected</div>
           <div class="counter-value" id="counter-infected"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-left">
           <div class="counter-name">Infected Today</div>
           <div class="counter-value" id="counter-infected-today"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-left">
+          <div class="counter-name">Infection Increase</div>
+          <div class="counter-value" id="counter-infected-change-percent"></div>
+        </div>
+        <div class="counter counter-left">
           <div class="counter-name">Total Deaths</div>
           <div class="counter-value" id="counter-dead"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-left">
           <div class="counter-name">Deaths Today</div>
           <div class="counter-value" id="counter-dead-today"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-left">
           <div class="counter-name">Tested</div>
           <div class="counter-value" id="counter-tested"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-left">
           <div class="counter-name">Mortality Rate</div>
           <div class="counter-value" id="counter-mortality-rate"></div>
         </div>
-        <div class="counter">
-          <div class="counter-name">Population</div>
-          <div class="counter-value" id="counter-population"></div>
+        <div class="counter counter-left">
+          <div class="counter-name">Infected Doubling Rate</div>
+          <div class="counter-value" id="counter-infected-doubling-rate"></div>
+        </div>
+        <div class="counter counter-left">
+          <div class="counter-name">Infected Doubling Rate (MA3)</div>
+          <div class="counter-value" id="counter-infected-doubling-rate-ma3"></div>
         </div>
       </div>
       <div class="counter-group">
-        <div class="counter">
+        <div class="counter counter-right">
           <div class="counter-name">Hospitalized</div>
           <div class="counter-value" id="counter-hospitalized"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-right">
           <div class="counter-name">Hospitalized (Critical)</div>
           <div class="counter-value" id="counter-hospitalized-critical"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-right">
+          <div class="counter-name">Hospitalization Doubling Rate</div>
+          <div class="counter-value" id="counter-hospitalized-doubling-rate"></div>
+        </div>
+        <div class="counter counter-right">
           <div class="counter-name">Infected Hospital Staff</div>
           <div class="counter-value" id="counter-hospital-staff-infected"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-right">
           <div class="counter-name">Quarantined Hospital Staff</div>
           <div class="counter-value" id="counter-hospital-staff-quarantined"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-right">
           <div class="counter-name">Population Infected</div>
           <div class="counter-value" id="counter-cases-in-population"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-right">
           <div class="counter-name">Population Tested</div>
           <div class="counter-value" id="counter-tested-in-population"></div>
         </div>
-        <div class="counter">
+        <div class="counter counter-right">
           <div class="counter-name">Test Hit Ratio</div>
           <div class="counter-value" id="counter-tested-hit-ratio"></div>
+        </div>
+        <div class="counter counter-right">
+          <div class="counter-name">Population</div>
+          <div class="counter-value" id="counter-population"></div>
         </div>
       </div>
     </div>
@@ -109,6 +125,9 @@
       <canvas id="infectedMA" width="800" height="300"></canvas>
     </div>
     <div class="flex">
+      <canvas id="infectedDoublingRate" width="800" height="300"></canvas>
+    </div>
+    <div class="flex">
       <canvas id="testedChangePercent" width="800" height="300"></canvas>
     </div>
     <div class="flex">
@@ -121,7 +140,13 @@
       <canvas id="hospitalizedMA" width="800" height="300"></canvas>
     </div>
     <div class="flex">
+      <canvas id="hospitalizedDoublingRate" width="800" height="300"></canvas>
+    </div>
+    <div class="flex">
       <canvas id="hospitalStaffInfectedChange" width="800" height="300"></canvas>
+    </div>
+    <div class="flex">
+      <canvas id="hospitalStaffInfectedDoublingRate" width="800" height="300"></canvas>
     </div>
     <div class="flex" id="footer">
       <p>Made from boredom with data from <a href="https://www.vg.no/spesial/2020/corona/">vg.no</a></p>

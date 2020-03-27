@@ -112,16 +112,17 @@ def calculate_doubling_rate(stats: List[Stats], field: str, mov_avg_3: bool = Fa
         current = stats[i]
         previous = stats[i-1]
 
-        source = field
+        ensure_field(current, field)
+        ensure_field(previous, field)
+
+        current_val = getattr(current, field)
 
         if mov_avg_3:
-            source = f'{field}_today_mov_avg_3'
-
-        ensure_field(current, source)
-        ensure_field(previous, source)
-
-        current_val = getattr(current, source)
-        previous_val = getattr(previous, source)
+            ma_field = f'{field}_today_mov_avg_3'
+            ensure_field(current, ma_field)
+            previous_val = current_val - getattr(current, ma_field)
+        else:
+            previous_val = getattr(previous, field)
 
         dr = doubling_rate(current_val, previous_val)
 

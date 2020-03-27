@@ -58,14 +58,26 @@ h3 {
 .counter {
     display: flex;
     justify-content: space-between;
-    margin: 10px 30px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.counter-left {
+    margin-left: 5px;
+    margin-right: 10px;
+}
+.counter-right {
+    margin-left: 10px;
+    margin-right: 5px;
 }
 
 .counter-name {
+    vertical-align: center;
+    line-height: 1.5rem;
     font-size: 1.1rem;
 }
 
 .counter-value {
+    vertical-align: center;
     font-size: 1.5rem;
     color: cadetblue;
     text-decoration: bold;
