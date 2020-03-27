@@ -12,3 +12,5 @@ Hosted at [coroner.ulv.io](https://coroner.ulv.io).
 All statistics are exposed via [api](https://coroner.ulv.io/api).
 
 Data collected from [vg.no](https://vg.no)
+
+Created using aiohttp (Python) and Chart.js.
