@@ -18,7 +18,6 @@ def pairwise(iterable):
 
     return zip(a, b)
 
-
 def ensure_field(obj: Any, field: str):
     if not hasattr(obj, field):
         raise ValueError(f'Object {obj} did not have attribute "{field}"')
