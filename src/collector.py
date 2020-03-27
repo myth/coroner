@@ -1,17 +1,20 @@
 from asyncio import create_task, sleep
 from datetime import datetime
+from json import dumps
 from logging import getLogger
+from os.path import abspath, dirname, join
 from sys import stdout
 from traceback import print_exc
 
 from aiohttp import ClientSession
 
 from models import Stats
-from utils import get_now_local
+from utils import get_now_local, get_today_local
 
 
 LOG = getLogger(__name__)
 
+BACKUP_INTERVAL = 7200 # Every 2 hours
 COLLECT_INTERVAL = 60  # Every minute
 
 # Data sources
@@ -24,6 +27,7 @@ class Collector:
     def __init__(self):
         self.session = None
         self.task = None
+        self.backup_task = None
         self.running = False
         self.status = 'ok'
         self.stats = {}
@@ -32,10 +36,9 @@ class Collector:
 
     def start(self):
         if not self.running and not self.task:
-            LOG.info('Starting statistics collector')
-
             self.running = True
             self.task = create_task(self.collect())
+            self.backup_task = create_task(self.backup())
 
     async def stop(self):
         if not self.running and self.task:
@@ -43,6 +46,9 @@ class Collector:
 
             await self.task.cancel()
             LOG.debug('Cancelled collector task')
+
+            await self.backup_task.cancel()
+            LOG.debug('Cancelled backup task')
 
             self.running = False
 
@@ -55,6 +61,8 @@ class Collector:
         LOG.debug('Closed client session')
 
     async def collect(self):
+        LOG.info('Starting statistics collector')
+
         while self.running:
             LOG.info('Collecting current stats from vg.no')
 
@@ -74,6 +82,26 @@ class Collector:
                 self.status = 'error'
 
             await sleep(COLLECT_INTERVAL)
+
+    async def backup(self):
+        LOG.debug('Starting backup routine')
+
+        while self.running:
+            await sleep(BACKUP_INTERVAL)
+
+            filename = f'{get_today_local()}.json'
+
+            LOG.info(f'Updating backup file: {filename}')
+
+            path = join(dirname(abspath(__name__)), '..', 'data', filename)
+
+            try:
+                with open(path, 'w') as f:
+                    f.write(dumps(self.stats, indent=2, separators=(',', ': ')))
+            except Exception as e:
+                self.status = 'error'
+
+                LOG.error(f'Failed to update backup file {filename}: {e}')
 
 
     async def _collect_case_history_vg(self):
