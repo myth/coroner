@@ -332,7 +332,7 @@ const updateCharts = data => {
     const hdrData = getLastNumDays(data, 14).filter(d => d['hospitalized']['general']['today'] > 0)
 
     createChart(
-        { element: 'hospitalizedDoublingRate', title: 'Hospitalization Doubling Rate (Higher is better) (14 day window)' },
+        { element: 'hospitalizedDoublingRate', title: 'Hospitalization Doubling Rate (14 day window)' },
         [{
             label: 'Doubling Rate (days)',
             data: hdrData.map(d => d['hospitalized']['general']['doubling_rate']),
@@ -360,7 +360,7 @@ const updateCharts = data => {
     const hsidrData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'hospitalStaffInfectedDoublingRate', title: 'Hospital Staff Infected Doubling Rate (Higher is better) (14 day window)' },
+        { element: 'hospitalStaffInfectedDoublingRate', title: 'Hospital Staff Infected Doubling Rate (14 day window)' },
         [{
             label: 'Doubling Rate (days)',
             data: hsidrData.map(d => d['hospital_staff']['infected']['doubling_rate']),
