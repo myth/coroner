@@ -12,6 +12,8 @@ steps:
           from_secret: docker_password
         repo: mythern/coroner
         context: .
+        cache_from:
+          - mythern/coroner:latest
     when:
         event: [push]
     volumes:
