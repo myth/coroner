@@ -266,9 +266,13 @@ def project_curves(stats: List[Stats]):
         data = stats[t:history + t + 1]
 
         for f in fields:
+            order = 3
             # Daily infections and current number of hospitalizations can decline
             if f in ('infected_today', 'hospitalized'):
                 can_decline = True
+
+                if f == 'infected_today':
+                    order = 4
             else:
                 can_decline = False
 
@@ -278,6 +282,7 @@ def project_curves(stats: List[Stats]):
                 f,
                 projection_length=length,
                 can_decline=can_decline,
+                order=order
             )
 
             # Update the projection stats objects with the curve data
