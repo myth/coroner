@@ -278,7 +278,6 @@ def project_curves(stats: List[Stats]):
                 f,
                 projection_length=length,
                 can_decline=can_decline,
-                order=order
             )
 
             # Update the projection stats objects with the curve data
