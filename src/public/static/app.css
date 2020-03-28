@@ -70,16 +70,9 @@ h3 {
     margin-right: 5px;
 }
 
-.counter-name {
-    vertical-align: center;
-    line-height: 1.5rem;
-}
-
 .counter-value {
-    vertical-align: center;
-    line-height: 1.5rem;
     color: cadetblue;
-    text-decoration: bold;
+    font-weight: bold;
 }
 
 #footer {
@@ -91,6 +84,7 @@ h3 {
 #counter-date {
   text-align: center;
   margin-top: 0px;
+  font-size: 1.2rem;
 }
 
 .slidecontainer {
