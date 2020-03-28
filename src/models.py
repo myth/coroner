@@ -17,7 +17,7 @@ def create_date_range(data):
     today = get_today_local()
     end = date.fromisoformat(max(data))
 
-    if end < today:
+    if end != today:
         end = today
 
     dates = [start]

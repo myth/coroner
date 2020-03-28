@@ -1,81 +1,77 @@
 html,
 body {
-    font-family: Verdana, sans-serif;
-    background-color: #111111;
-    color: #aaa;
+  font-family: Verdana, sans-serif;
+  background-color: #111111;
+  color: #aaa;
 }
 
 a,
 a:visited {
-    color: #4e7cdf;
-    text-decoration: none;
+  color: #4e7cdf;
+  text-decoration: none;
 }
 a:active,
 a:hover {
-    color: #7fa3f1;
-    text-decoration: underline;
+  color: #7fa3f1;
+  text-decoration: underline;
 }
 
 h1 {
-    margin-top: 50px;
-    font-size: 2rem;
-    text-align: center;
+  margin-top: 50px;
+  font-size: 2rem;
+  text-align: center;
 }
 
 h2 {
-    margin: 50px 0px;
-    font-size: 1.5rem;
-    text-align: center;
-    color: rgb(184, 146, 75)
+  margin: 50px 0px;
+  font-size: 1.5rem;
+  text-align: center;
+  color: rgb(184, 146, 75)
 }
 
 h3 {
-    margin-top: 15px;
-    font-size: 0.8rem;
-    text-align: center;
-    color: #666;
+  margin-top: 15px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: #666;
 }
 
 #stats {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .flex {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 .flex-row {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .counter-group {
-    width: 400px;
-    margin-bottom: 50px;
+  width: 400px;
+  margin-bottom: 50px;
 }
 
 .counter {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 .counter-left {
-    margin-left: 5px;
-    margin-right: 10px;
+  margin-left: 5px;
+  margin-right: 10px;
 }
 .counter-right {
-    margin-left: 10px;
-    margin-right: 5px;
+  margin-left: 10px;
+  margin-right: 5px;
 }
 
 .counter-value {
-    color: cadetblue;
-}
-
-#footer {
-    margin: 50px 0px;
+  color: cadetblue;
 }
 
 /* Coronaslider */
@@ -87,9 +83,9 @@ h3 {
 }
 
 .slidecontainer {
-    width: 800px;
-    margin-top: 25px;
-    margin-bottom: 25px;
+  width: 800px;
+  margin-top: 25px;
+  margin-bottom: 25px;
 }
 
 .slider:hover {
@@ -124,4 +120,31 @@ h3 {
   border-radius: 50%;
   background: rgb(184, 146, 75);
   cursor: pointer;
+}
+
+/* Footer */
+
+#footer {
+  margin-top: 50px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+#footer-icons {
+  margin: 20px 0px;
+}
+
+#footer-icons a:hover {
+  text-decoration: none;
+}
+
+.socialicon svg {
+  padding: 5px;
+  height: 32px;
+  width: 32px;
+  fill: #aaa;
+  background-color: transparent;
+}
+.socialicon svg:hover {
+  fill: rgb(184, 146, 75);
 }
