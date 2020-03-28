@@ -122,6 +122,11 @@ h3 {
   cursor: pointer;
 }
 
+#logo {
+  text-align: center;
+  margin-top: 100px;
+}
+
 /* Footer */
 
 #footer {
