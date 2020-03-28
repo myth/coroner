@@ -18,7 +18,7 @@ from utils import (
 
 LOG = getLogger(__name__)
 POPULATION: int = 5367580
-PROJECTION_DEFAULT_POLY_ORDER: int = 3
+PROJECTION_DEFAULT_POLY_ORDER: int = 4
 PROJECTION_DEFAULT_HISTORY_LENGTH: int = 14
 PROJECTION_DEFAULT_PROJECTION_LENGTH: int = 7
 
@@ -269,10 +269,8 @@ def project_curves(stats: List[Stats]):
             # Daily infections and current number of hospitalizations can decline
             if f in ('infected_today', 'hospitalized'):
                 can_decline = True
-                order = 4
             else:
                 can_decline = False
-                order = 3
 
             # Make some predictions
             curve, lower, upper = project_curve(
