@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from itertools import tee
 from logging import getLogger
 from math import log10
@@ -40,3 +40,13 @@ def get_today_local():
 
 def get_now_local():
     return UTC.localize(datetime.utcnow()).astimezone(NLT)
+
+def create_date_range(start: date, end: date):
+    dates = [start]
+
+    while start < end:
+        start += timedelta(days=1)
+
+        dates.append(start)
+
+    return dates

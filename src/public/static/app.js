@@ -298,7 +298,7 @@ const updateCharts = data => {
     const icpData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'infectedChangePercent', title: 'Daily New Infections (14 day window)' },
+        { element: 'infectedChangePercent', title: 'Daily New Infections (Last 14 days)' },
         [{
             label: 'Change (%)',
             data: icpData.map(d => d['infected']['daily_diff_percent']),
@@ -350,7 +350,7 @@ const updateCharts = data => {
     const tcpData = getLastNumDays(data, 7)
 
     createChart(
-        { element: 'testedChangePercent', title: 'Daily New Tests (7 day window)' },
+        { element: 'testedChangePercent', title: 'Daily New Tests (Last 7 days)' },
         [{
             label: 'Change (%)',
             data: tcpData.map(d => d['tested']['daily_diff_percent']),
@@ -364,7 +364,7 @@ const updateCharts = data => {
     const thrpData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'testedHitRatioPercent', title: 'Test Hit Ratio (14 day window)' },
+        { element: 'testedHitRatioPercent', title: 'Test Hit Ratio (Last 14 days)' },
         [{
             label: 'Hit Ratio (%)',
             data: thrpData.map(d => d['tested']['hit_ratio_percent']),
@@ -378,7 +378,7 @@ const updateCharts = data => {
     const hcpData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'hospitalizedChangePercent', title: 'Daily Hospitalization (14 day window)' },
+        { element: 'hospitalizedChangePercent', title: 'Daily Hospitalization (Last 14 days)' },
         [{
             label: 'General (%)',
             data: hcpData.map(d => d['hospitalized']['general']['daily_diff_percent']),
@@ -396,10 +396,10 @@ const updateCharts = data => {
         hcpData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hmaData = getLastNumDays(data, 14).filter(d => d['hospitalized']['general']['total'] > 0)
+    const hmaData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'hospitalizedMA', title: 'Daily Hospitalization (Moving Average)' },
+        { element: 'hospitalizedMA', title: 'Daily Hospitalization Moving Average (Last 14 days)' },
         [{
             label: 'General (3 day window)',
             data: hmaData.map(d => d['hospitalized']['general']['today_mov_avg_3']),
@@ -417,10 +417,10 @@ const updateCharts = data => {
         hmaData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hdrData = getLastNumDays(data, 14).filter(d => d['hospitalized']['general']['today'] > 0)
+    const hdrData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'hospitalizedDoublingRate', title: 'Hospitalization Doubling Rate (14 day window)' },
+        { element: 'hospitalizedDoublingRate', title: 'Hospitalization Doubling Rate (Last 14 days)' },
         [{
             label: 'Doubling Rate (days)',
             data: hdrData.map(d => d['hospitalized']['general']['doubling_rate']),
@@ -434,7 +434,7 @@ const updateCharts = data => {
     const hsicpData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'hospitalStaffInfectedChange', title: 'Daily Hospital Staff Infected' },
+        { element: 'hospitalStaffInfectedChange', title: 'Daily Hospital Staff Infected (Last 14 days)' },
         [{
             label: 'Daily Change',
             data: hsicpData.map(d => d['hospital_staff']['infected']['daily_diff']),
@@ -448,7 +448,7 @@ const updateCharts = data => {
     const hsidrData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'hospitalStaffInfectedDoublingRate', title: 'Hospital Staff Infected Doubling Rate (14 day window)' },
+        { element: 'hospitalStaffInfectedDoublingRate', title: 'Hospital Staff Infected Doubling Rate (Last 14 days)' },
         [{
             label: 'Doubling Rate (days)',
             data: hsidrData.map(d => d['hospital_staff']['infected']['doubling_rate']),

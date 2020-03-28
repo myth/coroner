@@ -5,6 +5,7 @@ from logging import getLogger
 from os.path import abspath, dirname, join
 from sys import stdout
 from traceback import print_exc
+from typing import List, Union
 
 from aiohttp import ClientSession
 
@@ -66,8 +67,6 @@ class Collector:
         while self.running:
             LOG.info('Collecting current stats from vg.no')
 
-            self.status = 'ok'
-
             try:
                 case_history = await self._collect_case_history_vg()
                 hospital_history = await self._collect_hospital_history_vg()
@@ -75,11 +74,13 @@ class Collector:
 
                 self._populate_timeseries(case_history, hospital_history, test_history)
 
+                self.stats['status'] = 'ok'
+
                 LOG.info('Collection of current stats from vg.no complete')
             except Exception as e:
                 LOG.error(e)
                 print_exc(file=stdout)
-                self.status = 'error'
+                self.stats['status'] = 'error'
 
             await sleep(COLLECT_INTERVAL)
 
@@ -99,10 +100,9 @@ class Collector:
                 with open(path, 'w') as f:
                     f.write(dumps(self.stats, indent=2, separators=(',', ': ')))
             except Exception as e:
-                self.status = 'error'
+                self.stats['status'] = 'error'
 
                 LOG.error(f'Failed to update backup file {filename}: {e}')
-
 
     async def _collect_case_history_vg(self):
         async with self.session.get(VG_CASES_TS) as response:
