@@ -52,6 +52,18 @@ const getLastNumDays = (data, days) => {
     return data['history'].slice(size - days, size)
 }
 
+const getLast = data => {
+    if (data.length > 0) {
+        return data[data.length - 1]
+    } else {
+        return null
+    }
+}
+
+const getPaddingFrom = data => {
+    return data.slice(0, data.length - 1).map(d => null)
+}
+
 const createChart = (opts, datasets, labels) => {
     const ctx = document.getElementById(opts.element).getContext('2d')
     const type = opts.type || 'line'
@@ -245,52 +257,42 @@ const updateCharts = data => {
 
     // Projections
 
-    const dummyCurrentData = [228, 405, 631, 805, 996, 1108, 1259, 1354, 1479, 1609, 1789, 1992, 2206, 2413, 2651, 2918, 3170, 3394, 3771, 3771]
-    const dummyData = [4262, 4607, 4978, 5375, 5800, 6255, 6742]
-    //const dummyData = [4446, 4856, 5304, 5791, 6320, 6893, 7514, 8184, 8905, 9681]
-    const avgError = 0.0347
-    const size = dummyCurrentData.length
-    const intersection = dummyCurrentData[size - 1]
-    const padding = dummyCurrentData.slice(0, size - 1).map(d => null)
-    const dummyProjectedData = [...padding, intersection, ...dummyData]
-    let n = 1
-    const dummyUpperBound = [...padding, intersection, ...dummyData.map(d => d * Math.pow((1.0 + avgError), n++))]
-    n = 1
-    const dummyLowerBound = [...padding, intersection, ...dummyData.map(d => d * Math.pow((1.0 - avgError), n++))]
-
-    let i = 1
+    const predInfCurrentData = getLastNumDays(data, 14)
+    const predInfProjectedData = getLast(predInfCurrentData)['projections']
+    const predInfLabels = [...predInfCurrentData, ...predInfProjectedData].map(d => d['date'])
+    const predInfIntersect = getLast(predInfCurrentData)['infected']['total']
 
     createChart(
-        { element: 'playground', title: 'Predicted Infections (Static test data using polynomial interpolation)' },
+        { element: 'predictedInfected', title: 'Predicted Infections (Last 14 days, 7 day projection)' },
         [{
             label: 'Actual',
-            data: dummyCurrentData,
+            data: predInfCurrentData.map(d => d['infected']['total']),
             fill: true,
             borderColor: ORANGE_BORDER,
             backgroundColor: ORANGE
         },
         {
-            label: 'Predicted',
-            data: dummyProjectedData,
+            label: 'Projected',
+            data: [...getPaddingFrom(predInfCurrentData), predInfIntersect, ...predInfProjectedData.map(d => d['infected'])],
             fill: true,
             borderColor: YELLOW_BORDER,
             backgroundColor: YELLOW
         },
         {
             label: 'Upper Bound',
-            data: dummyUpperBound,
+            data: [...getPaddingFrom(predInfCurrentData), predInfIntersect, ...predInfProjectedData.map(d => d['infected_upper'])],
             fill: false,
             borderColor: RED_BORDER,
             backgroundColor: RED
         },
         {
             label: 'Lower Bound',
-            data: dummyLowerBound,
+            data: [...getPaddingFrom(predInfCurrentData), predInfIntersect, ...predInfProjectedData.map(d => d['infected_lower'])],
             fill: false,
             borderColor: GREEN_BORDER,
             backgroundColor: GREEN
         }],
-        dummyProjectedData.map(d => i++)
+        predInfLabels
     )
 
     // Growth factors
