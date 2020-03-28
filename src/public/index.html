@@ -14,13 +14,21 @@
 <body>
   <header class="mainHeader">
     <div class="mainHeader-container">
-      <h1>The Coroner</h1>
+      <h1 id="title">The Coroner</h1>
       <h3 id="last-update"></h3>
     </div>
   </header>
 
   <main id="stats">
     <h2>Reference Numbers (Norway)</h2>
+    <div class="flex">
+      <div id="datepicker-container">
+        <div class="counter-value" id="counter-date">2020-03-28</div>
+        <div class="slidecontainer">
+          <input type="range" min="0" max="100" value="100" class="slider" id="datepicker">
+        </div>
+      </div>
+    </div>
     <div class="flex">
       <div class="counter-group">
         <div class="counter counter-left">
@@ -44,10 +52,6 @@
           <div class="counter-value" id="counter-dead-today"></div>
         </div>
         <div class="counter counter-left">
-          <div class="counter-name">Tested</div>
-          <div class="counter-value" id="counter-tested"></div>
-        </div>
-        <div class="counter counter-left">
           <div class="counter-name">Mortality Rate</div>
           <div class="counter-value" id="counter-mortality-rate"></div>
         </div>
@@ -58,6 +62,10 @@
         <div class="counter counter-left">
           <div class="counter-name">Infected Doubling Rate (MA3)</div>
           <div class="counter-value" id="counter-infected-doubling-rate-ma3"></div>
+        </div>
+        <div class="counter counter-left">
+          <div class="counter-name">Tested</div>
+          <div class="counter-value" id="counter-tested"></div>
         </div>
       </div>
       <div class="counter-group">
@@ -116,6 +124,10 @@
     </div>
     <div class="flex">
       <canvas id="tested" width="800" height="300"></canvas>
+    </div>
+    <h2>Projections (Beta)</h2>
+    <div class="flex">
+      <canvas id="playground" width="800" height="500"></canvas>
     </div>
     <h2>Growth Metrics</h2>
     <div class="flex">
