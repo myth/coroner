@@ -73,12 +73,11 @@ h3 {
 .counter-name {
     vertical-align: center;
     line-height: 1.5rem;
-    font-size: 1.1rem;
 }
 
 .counter-value {
     vertical-align: center;
-    font-size: 1.5rem;
+    line-height: 1.5rem;
     color: cadetblue;
     text-decoration: bold;
 }
