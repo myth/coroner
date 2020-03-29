@@ -36,6 +36,13 @@ h3 {
   color: #666;
 }
 
+p.description {
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.0rem;
+  margin-bottom: 15px;
+}
+
 #stats {
   display: flex;
   flex-direction: column;

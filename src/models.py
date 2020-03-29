@@ -18,7 +18,7 @@ from utils import (
 
 LOG = getLogger(__name__)
 POPULATION: int = 5367580
-PROJECTION_DEFAULT_POLY_ORDER: int = 4
+PROJECTION_DEFAULT_POLY_ORDER: int = 3
 PROJECTION_DEFAULT_HISTORY_LENGTH: int = 14
 PROJECTION_DEFAULT_PROJECTION_LENGTH: int = 7
 
@@ -57,8 +57,7 @@ def update_from_data(current: Stats, previous: Stats, data: Dict[str, Any]):
     current.hospitalized = get_valid('hospitalized')
     current.hospitalized_critical = get_valid('hospitalized_critical')
     current.hospital_staff_infected = get_valid('hospital_staff_infected')
-    current.hospital_staff_quarantined = get_valid(
-        'hospital_staff_quarantined')
+    current.hospital_staff_quarantined = get_valid('hospital_staff_quarantined')
 
 
 def calculate_changes(current: Stats, previous: Stats):
@@ -193,7 +192,6 @@ def project_curve(stats: List[Stats],
 
     for i in range(len(stats) + projection_length):
         if i >= len(stats):
-            #print(i, f(i), 0)
             curve.append(int(round(f(i))))
         else:
             val = getattr(stats[i], field)
@@ -252,7 +250,6 @@ def project_curves(stats: List[Stats]):
 
     fields = [
         'infected',
-        'infected_today',
         'hospitalized',
         'hospital_staff_infected',
     ]
@@ -266,13 +263,9 @@ def project_curves(stats: List[Stats]):
         data = stats[t:history + t + 1]
 
         for f in fields:
-            order = 3
             # Daily infections and current number of hospitalizations can decline
-            if f in ('infected_today', 'hospitalized'):
+            if f == 'hospitalized':
                 can_decline = True
-
-                if f == 'infected_today':
-                    order = 4
             else:
                 can_decline = False
 
@@ -282,7 +275,6 @@ def project_curves(stats: List[Stats]):
                 f,
                 projection_length=length,
                 can_decline=can_decline,
-                order=order
             )
 
             # Update the projection stats objects with the curve data
@@ -302,10 +294,6 @@ class ProjectionStats:
         self.infected_lower = 0
         self.infected_upper = 0
 
-        self.infected_today = 0
-        self.infected_today_lower = 0
-        self.infected_today_upper = 0
-
         self.hospitalized = 0
         self.hospitalized_lower = 0
         self.hospitalized_upper = 0
@@ -320,9 +308,6 @@ class ProjectionStats:
             'infected': self.infected,
             'infected_lower': self.infected_lower,
             'infected_upper': self.infected_upper,
-            'infected_today': self.infected_today,
-            'infected_today_lower': self.infected_today_lower,
-            'infected_today_upper': self.infected_today_upper,
             'hospitalized': self.hospitalized,
             'hospitalized_lower': self.hospitalized_lower,
             'hospitalized_upper': self.hospitalized_upper,
@@ -596,7 +581,7 @@ class Stats:
                 'infected_percent': self.population_infected_percent,
                 'tested_percent': self.population_tested_percent
             },
-            'projections': [p.json() for p in self.projections]
+            # 'projections': [p.json() for p in self.projections]
         }
 
     @staticmethod
@@ -632,7 +617,7 @@ class Stats:
 
         calculate_moving_averages(stats)
         calculate_doubling_rates(stats)
-        project_curves(stats)
+        # project_curves(stats)
 
         return stats
 
