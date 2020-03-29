@@ -18,7 +18,7 @@ const PURPLE_BORDER = 'rgba(136, 26, 209, 1.0)'
 
 const LINE_TENSION = 0
 
-const options = {
+const OPTIONS = {
     responsive: false,
     scales: {
         xAxes: [{
@@ -39,6 +39,10 @@ const options = {
     }
 }
 
+const setElementContent = (id, value) => {
+    document.getElementById(id).innerHTML = value
+}
+
 const setStatus = ok => {
     const title = document.getElementById('title')
     if (!ok) {
@@ -51,7 +55,7 @@ const setStatus = ok => {
 const getLastNumDays = (data, days) => {
     size = data.length
 
-    return data.slice(size - days, size)
+    return data.slice(Math.max(size - days, 0), size)
 }
 
 const getLast = data => {
@@ -66,17 +70,17 @@ const getPaddingFrom = data => {
     return data.slice(0, data.length - 1).map(d => null)
 }
 
-const createChart = (opts, datasets, labels) => {
+const initChart = (opts, datasets, labels) => {
     const ctx = document.getElementById(opts.element).getContext('2d')
     const type = opts.type || 'bar'
     const stacked = opts.stacked || false
 
-    const globalOpts = {...options}
+    const globalOpts = {...OPTIONS}
 
     if (opts.log) globalOpts.scales.yAxes[0].type = 'logarithmic'
     if (opts.stacked) {
-        globalOpts.scales.xAxes[0].stacked = opts.stacked
-        globalOpts.scales.yAxes[0].stacked = opts.stacked
+        globalOpts.scales.xAxes[0].stacked = stacked
+        globalOpts.scales.yAxes[0].stacked = stacked
     }
     if (opts.title) globalOpts.title = {
         display: true,
@@ -91,10 +95,6 @@ const createChart = (opts, datasets, labels) => {
         },
         options: globalOpts
     })
-}
-
-const setElementContent = (id, value) => {
-    document.getElementById(id).innerHTML = value
 }
 
 const updateCounters = c => {
@@ -118,12 +118,11 @@ const updateCounters = c => {
     setElementContent('counter-infected-doubling-rate-ma3', `${c['infected']['doubling_rate_from_mov_avg_3']} days`)
 }
 
-const bindDatePicker = data => {
-    const date = document.getElementById('counter-date')
+const bindDatePicker = (data, charts) => {
     const slider = document.getElementById('datepicker')
 
     const updateDate = i => {
-        date.innerHTML = data[i]['date']
+        setElementContent('counter-date', data[i]['date'])
     }
 
     updateDate(data.length - 1)
@@ -136,7 +135,12 @@ const bindDatePicker = data => {
 
         updateDate(i)
         updateCounters(data[i])
-        updateCharts(data.slice(0, i + 1))
+
+        const newData = data.slice(0, i + 1)
+
+        for (let chart of charts) {
+            chart.update(newData)
+        }
     }
 }
 
@@ -150,291 +154,348 @@ const updateCurrent = data => {
     updateCounters(c)
 }
 
-const updateCharts = data => {
-    createChart(
-        { element: 'infected' },
-        [{
-            label: 'Total Infected',
-            data: data.map(d => d['infected']['total']),
-            fill: true,
-            borderColor: YELLOW_BORDER,
-            backgroundColor: YELLOW,
-        }],
-        data.map(d => d['date'].slice(5, 10)),
+const createChart = (originalData, opts) => {
+    const prepareData = data => {
+        const windowSize = opts.window || null
+        const filter = opts.filter || null
+
+        let filteredData = data
+
+        if (windowSize !== null) filteredData = getLastNumDays(filteredData, windowSize)
+        if (filter !== null) filteredData = filteredData.filter(opts.filter)
+
+        return filteredData
+    }
+
+    const data = prepareData(originalData)
+    const labels = data.map(d => d['date'].slice(5, 10))
+
+    const chart = initChart(
+        { element: opts.element, title: opts.title, type: opts.type },
+        opts.datasets.map(d => {
+            return {
+                ...d,
+                data: data.map(d.valueGetter)
+            }
+        }),
+        labels
     )
 
-    createChart(
-        { element: 'infectedToday' },
-        [{
-            label: 'Daily Infected',
-            data: data.map(d => d['infected']['today']),
-            fill: true,
-            borderColor: BLUE_BORDER,
-            backgroundColor: BLUE,
-        }],
-        data.map(d => d['date'].slice(5, 10)),
-    )
+    return {
+        chart: chart,
+        update: d => {
+            const newData = prepareData(d)
 
-    createChart(
-        { element: 'dead' },
-        [{
-            label: 'Total Deaths',
-            data: data.map(d => d['dead']['total']),
-            fill: true,
-            borderColor: RED_BORDER,
-            backgroundColor: RED,
-        }],
-        data.map(d => d['date'].slice(5, 10)),
-    )
+            for (let i = 0; i < opts.datasets.length; i++) {
+                chart.data.datasets[i].data = newData.map(opts.datasets[i].valueGetter)
+            }
 
-    createChart(
-        { element: 'deadToday' },
-        [{
-            label: 'Daily Deaths',
-            data: data.map(d => d['dead']['today']),
-            borderColor: RED_BORDER,
-            backgroundColor: RED,
-        }],
-        data.map(d => d['date'].slice(5, 10)),
-    )
+            chart.update()
+        }
+    }
+}
 
-    const hData = data.filter(d => d['hospitalized']['general']['total'] > 0)
+const createAllCharts = data => {
+    const charts = []
 
-    createChart(
-        { element: 'hospitalized', title: 'Hospitalized' },
-        [{
-            label: 'Critical',
-            data: hData.map(d => d['hospitalized']['critical']['total']),
-            fill: true,
-            borderColor: ORANGE_BORDER,
-            backgroundColor: 'rgba(201, 78, 21, 0.5)',
-        },
+    charts.push(createChart(
+        data,
         {
-            label: 'Total',
-            data: hData.map(d => d['hospitalized']['general']['total']),
-            fill: true,
-            borderColor: PURPLE_BORDER,
-            backgroundColor: PURPLE,
-        }],
-        hData.map(d => d['date'].slice(5, 10)),
-    )
+            element: 'infected',
+            datasets: [{
+                label: 'Total Infected',
+                valueGetter: d => d['infected']['total'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        },
+    ))
 
-    const hsiData = data.filter(d => d['hospital_staff']['infected']['total'] > 0)
+    charts.push(createChart(
+        data,
+        {
+            element: 'infectedToday',
+            datasets: [{
+                label: 'Daily Infected',
+                valueGetter: d => d['infected']['today'],
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE,
+            }]
+        },
+    ))
 
-    createChart(
-        { element: 'hospitalStaffInfected' },
-        [{
-            label: 'Hospital Staff Infected',
-            data: hsiData.map(d => d['hospital_staff']['infected']['total']),
-            fill: true,
-            borderColor: YELLOW_BORDER,
-            backgroundColor: YELLOW,
-        }],
-        hsiData.map(d => d['date'].slice(5, 10)),
-    )
+    charts.push(createChart(
+        data,
+        {
+            element: 'dead',
+            datasets: [{
+                label: 'Total Deaths',
+                valueGetter: d => d['dead']['total'],
+                borderColor: RED_BORDER,
+                backgroundColor: RED,
+            }]
+        },
+    ))
 
-    const hsqData = data.filter(d => d['hospital_staff']['quarantined']['total'] > 0)
+    charts.push(createChart(
+        data,
+        {
+            element: 'deadToday',
+            datasets: [{
+                label: 'Daily Deaths',
+                valueGetter: d => d['dead']['today'],
+                borderColor: RED_BORDER,
+                backgroundColor: RED,
+            }]
+        },
+    ))
 
-    createChart(
-        { element: 'hospitalStaffQuarantined' },
-        [{
-            label: 'Hospital Staff Quarantined',
-            data: hsqData.map(d => d['hospital_staff']['quarantined']['total']),
-            fill: true,
-            borderColor: BLUE_BORDER,
-            backgroundColor: BLUE,
-        }],
-        hsqData.map(d => d['date'].slice(5, 10)),
-    )
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalized',
+            title: 'Hospitalized',
+            filter: d => d['hospitalized']['general']['total'] > 0,
+            datasets: [{
+                label: 'Critical',
+                valueGetter: d => d['hospitalized']['critical']['total'],
+                borderColor: ORANGE_BORDER,
+                backgroundColor: 'rgba(201, 78, 21, 0.5)',
+            },
+            {
+                label: 'Total',
+                valueGetter: d => d['hospitalized']['general']['total'],
+                borderColor: PURPLE_BORDER,
+                backgroundColor: PURPLE,
+            }]
+        },
+    ))
 
-    const tData = data.filter(d => d['tested']['total'] > 0)
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalStaffInfected',
+            filter: d => d['hospital_staff']['infected']['total'] > 0,
+            datasets: [{
+                label: 'Hospital Staff Infected',
+                valueGetter: d => d['hospital_staff']['infected']['total'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        },
+    ))
 
-    createChart(
-        { element: 'tested' },
-        [{
-            label: 'Tested',
-            data: tData.map(d => d['tested']['total']),
-            fill: true,
-            borderColor: GREEN_BORDER,
-            backgroundColor: GREEN,
-        }],
-        tData.map(d => d['date'].slice(5, 10)),
-    )
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalStaffQuarantined',
+            filter: d => d['hospital_staff']['quarantined']['total'] > 0,
+            datasets: [{
+                label: 'Hospital Staff Quarantined',
+                valueGetter: d => d['hospital_staff']['quarantined']['total'],
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE,
+            }]
+        }
+    ))
+
+    charts.push(createChart(
+        data,
+        {
+            element: 'tested',
+            filter: d => d['tested']['total'] > 0,
+            datasets: [{
+                label: 'Tested',
+                valueGetter: d => d['tested']['total'],
+                borderColor: GREEN_BORDER,
+                backgroundColor: GREEN,
+            }]
+        },
+    ))
 
     // Growth factors
 
-    const icpData = getLastNumDays(data, 14)
-
-    createChart(
-        { element: 'infectedChangePercent', title: 'Daily New Infections (Last 14 days)' },
-        [{
-            label: 'Change (%)',
-            data: icpData.map(d => d['infected']['daily_diff_percent']),
-            fill: true,
-            borderColor: YELLOW_BORDER,
-            backgroundColor: YELLOW,
-        }],
-        icpData.map(d => d['date'].slice(5, 10)),
-    )
-
-    createChart(
-        { element: 'infectedMA', title: 'Daily New Infections (Moving Average)' },
-        [{
-            label: '3 day window',
-            data: data.map(d => d['infected']['today_mov_avg_3']),
-            fill: true,
-            borderColor: ORANGE_BORDER,
-            backgroundColor: ORANGE,
-        },
+    charts.push(createChart(
+        data,
         {
-            label: '5 day window',
-            data: data.map(d => d['infected']['today_mov_avg_5']),
-            fill: true,
-            borderColor: YELLOW_BORDER,
-            backgroundColor: YELLOW,
-        }],
-        data.map(d => d['date'].slice(5, 10)),
-    )
+            element: 'infectedChangePercent',
+            title: 'Daily New Infections (Last 14 days)',
+            window: 14,
+            datasets: [{
+                label: 'Change (%)',
+                valueGetter: d => d['infected']['daily_diff_percent'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        }
+    ))
 
-    createChart(
-        { element: 'infectedDoublingRate', title: 'Infection Doubling Rate' },
-        [{
-            label: 'Standard (days)',
-            data: data.map(d => d['infected']['doubling_rate']),
-            fill: true,
-            borderColor: ORANGE_BORDER,
-            backgroundColor: ORANGE,
-        },
+    charts.push(createChart(
+        data,
         {
-            label: '3 Day Moving Average (days)',
-            data: data.map(d => d['infected']['doubling_rate_from_mov_avg_3']),
-            fill: true,
-            borderColor: YELLOW_BORDER,
-            backgroundColor: YELLOW,
-        }],
-        data.map(d => d['date'].slice(5, 10)),
-    )
+            element: 'infectedMA',
+            title: 'Daily New Infections (Moving Average)',
+            datasets: [{
+                label: '3 day window',
+                valueGetter: d => d['infected']['today_mov_avg_3'],
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE,
+            },
+            {
+                label: '5 day window',
+                valueGetter: d => d['infected']['today_mov_avg_5'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        }
+    ))
 
-    const tcpData = getLastNumDays(data, 14)
-
-    createChart(
-        { element: 'testedChange', title: 'Testing Day-to-Day Change (Last 14 days)' },
-        [{
-            label: 'Day-to-Day Change',
-            data: tcpData.map(d => d['tested']['daily_diff']),
-            fill: true,
-            borderColor: GREEN_BORDER,
-            backgroundColor: GREEN,
-        }],
-        tcpData.map(d => d['date'].slice(5, 10)),
-    )
-
-    const thrpData = data.filter(d => d['tested']['total'] > 0)
-
-    createChart(
-        { element: 'testedHitRatioPercent', title: 'Test Hit Ratio' },
-        [{
-            label: 'Hit Ratio (%)',
-            data: thrpData.map(d => d['tested']['hit_ratio_percent']),
-            fill: true,
-            borderColor: GREEN_BORDER,
-            backgroundColor: GREEN,
-        }],
-        thrpData.map(d => d['date'].slice(5, 10)),
-    )
-
-    const hcpData = data.filter(d => d['hospitalized']['general']['total'] > 0)
-
-    createChart(
-        { element: 'hospitalizedChange', title: 'Daily Hospitalizations' },
-        [{
-            label: 'General',
-            data: hcpData.map(d => d['hospitalized']['general']['today']),
-            fill: true,
-            borderColor: PURPLE_BORDER,
-            backgroundColor: PURPLE,
-        },
+    charts.push(createChart(
+        data,
         {
-            label: 'Critical',
-            data: hcpData.map(d => d['hospitalized']['critical']['today']),
-            fill: true,
-            borderColor: ORANGE_BORDER,
-            backgroundColor: 'rgba(201, 78, 21, 0.5)',
-        }],
-        hcpData.map(d => d['date'].slice(5, 10)),
-    )
+            element: 'infectedDoublingRate',
+            title: 'Infection Doubling Rate',
+            datasets: [{
+                label: 'Standard (days)',
+                valueGetter: d => d['infected']['doubling_rate'],
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE,
+            },
+            {
+                label: '3 Day Moving Average (days)',
+                valueGetter: d => d['infected']['doubling_rate_from_mov_avg_3'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        }
+    ))
 
-    const hmaData = data.filter(d => d['hospitalized']['general']['total'] > 0)
-
-    createChart(
-        { element: 'hospitalizedMA', title: 'Daily Hospitalization Moving Average' },
-        [{
-            label: 'General (3 day window)',
-            data: hmaData.map(d => d['hospitalized']['general']['today_mov_avg_3']),
-            fill: true,
-            borderColor: PURPLE_BORDER,
-            backgroundColor: PURPLE,
-        },
+    charts.push(createChart(
+        data,
         {
-            label: 'Critical (3 day window)',
-            data: hmaData.map(d => d['hospitalized']['critical']['today_mov_avg_3']),
-            fill: true,
-            borderColor: ORANGE_BORDER,
-            backgroundColor: 'rgba(201, 78, 21, 0.5)',
-        }],
-        hmaData.map(d => d['date'].slice(5, 10)),
-    )
+            element: 'testedChange',
+            title: 'Testing Day-to-Day Change (Last 14 days)',
+            window: 14,
+            datasets: [{
+                label: 'Day-to-Day Change',
+                valueGetter: d => d['tested']['daily_diff'],
+                borderColor: GREEN_BORDER,
+                backgroundColor: GREEN,
+            }]
+        }
+    ))
 
-    const hdrData = getLastNumDays(data, 14)
+    charts.push(createChart(
+        data,
+        {
+            element: 'testedHitRatioPercent',
+            title: 'Test Hit Ratio',
+            filter: d => d['tested']['total'] > 0,
+            datasets: [{
+                label: 'Hit Ratio (%)',
+                valueGetter: d => d['tested']['hit_ratio_percent'],
+                borderColor: GREEN_BORDER,
+                backgroundColor: GREEN,
+            }]
+        },
+    ))
 
-    createChart(
-        { element: 'hospitalizedDoublingRate', title: 'Hospitalization Doubling Rate (Last 14 days)' },
-        [{
-            label: 'Doubling Rate (days)',
-            data: hdrData.map(d => d['hospitalized']['general']['doubling_rate']),
-            fill: true,
-            borderColor: PURPLE_BORDER,
-            backgroundColor: PURPLE,
-        }],
-        hdrData.map(d => d['date'].slice(5, 10)),
-    )
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalizedChange',
+            title: 'Daily Hospitalizations',
+            filter: d => d['hospitalized']['general']['total'] > 0,
+            datasets: [{
+                label: 'General',
+                valueGetter: d => d['hospitalized']['general']['today'],
+                borderColor: PURPLE_BORDER,
+                backgroundColor: PURPLE,
+            },
+            {
+                label: 'Critical',
+                valueGetter: d => d['hospitalized']['critical']['today'],
+                borderColor: ORANGE_BORDER,
+                backgroundColor: 'rgba(201, 78, 21, 0.5)',
+            }]
+        }
+    ))
 
-    const hsicpData = data.filter(d => d['hospital_staff']['infected']['total'] > 0)
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalizedMA',
+            title: 'Daily Hospitalization Moving Average',
+            filter: d => d['hospitalized']['general']['total'] > 0,
+            datasets: [{
+                label: 'General (3 day window)',
+                valueGetter: d => d['hospitalized']['general']['today_mov_avg_3'],
+                borderColor: PURPLE_BORDER,
+                backgroundColor: PURPLE,
+            },
+            {
+                label: 'Critical (3 day window)',
+                valueGetter: d => d['hospitalized']['critical']['today_mov_avg_3'],
+                borderColor: ORANGE_BORDER,
+                backgroundColor: 'rgba(201, 78, 21, 0.5)',
+            }]
+        }
+    ))
 
-    createChart(
-        { element: 'hospitalStaffInfectedChange', title: 'Hospital Staff Infected Day-by-Day Change' },
-        [{
-            label: 'Day-to-Day Change',
-            data: hsicpData.map(d => d['hospital_staff']['infected']['daily_diff']),
-            fill: true,
-            borderColor: BLUE_BORDER,
-            backgroundColor: BLUE,
-        }],
-        hsicpData.map(d => d['date'].slice(5, 10)),
-    )
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalizedDoublingRate',
+            title: 'Hospitalization Doubling Rate (Last 14 days)',
+            window: 14,
+            datasets: [{
+                label: 'Doubling Rate (days)',
+                valueGetter: d => d['hospitalized']['general']['doubling_rate'],
+                borderColor: PURPLE_BORDER,
+                backgroundColor: PURPLE,
+            }]
+        }
+    ))
 
-    const hsidrData = getLastNumDays(data, 14)
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalStaffInfectedChange',
+            title: 'Hospital Staff Infected Day-by-Day Change',
+            filter: d => d['hospital_staff']['infected']['total'] > 0,
+            datasets: [{
+                label: 'Day-to-Day Change',
+                valueGetter: d => d['hospital_staff']['infected']['daily_diff'],
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE,
+            }]
+        }
+    ))
 
-    createChart(
-        { element: 'hospitalStaffInfectedDoublingRate', title: 'Hospital Staff Infected Doubling Rate (Last 14 days)' },
-        [{
-            label: 'Doubling Rate (days)',
-            data: hsidrData.map(d => d['hospital_staff']['infected']['doubling_rate']),
-            fill: true,
-            borderColor: YELLOW_BORDER,
-            backgroundColor: YELLOW,
-        }],
-        hsidrData.map(d => d['date'].slice(5, 10)),
-    )
+    charts.push(createChart(
+        data,
+        {
+            element: 'hospitalStaffInfectedDoublingRate',
+            title: 'Hospital Staff Infected Doubling Rate (Last 14 days)',
+            window: 14,
+            datasets: [{
+                label: 'Doubling Rate (days)',
+                valueGetter: d => d['hospital_staff']['infected']['doubling_rate'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        },
+    ))
+
+    return charts
 }
 
 const loadData = async() => {
     fetch('/api').then(async r => {
         const data = await r.json()
-
+        const charts = createAllCharts(data['history'])
         updateCurrent(data)
-        bindDatePicker(data['history'])
-        updateCharts(data['history'])
+        bindDatePicker(data['history'], charts)
     })
 }
 
