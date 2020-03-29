@@ -318,21 +318,6 @@ const createAllCharts = data => {
     charts.push(createChart(
         data,
         {
-            element: 'infectedChangePercent',
-            title: 'Daily New Infections (Last 14 days)',
-            window: 14,
-            datasets: [{
-                label: 'Change (%)',
-                valueGetter: d => d['infected']['daily_diff_percent'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            }]
-        }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
             element: 'infectedMA',
             title: 'Daily New Infections (Moving Average)',
             datasets: [{
@@ -373,12 +358,31 @@ const createAllCharts = data => {
     charts.push(createChart(
         data,
         {
+            element: 'infectedChangePercent',
+            title: 'Daily New Infections (Last 14 days)',
+            window: 14,
+            type: 'line',
+            datasets: [{
+                label: 'Change (%)',
+                valueGetter: d => d['infected']['daily_diff_percent'],
+                lineTension: 0,
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        }
+    ))
+
+    charts.push(createChart(
+        data,
+        {
             element: 'testedChange',
             title: 'Testing Day-to-Day Change (Last 14 days)',
             window: 14,
+            type: 'line',
             datasets: [{
                 label: 'Day-to-Day Change',
                 valueGetter: d => d['tested']['daily_diff'],
+                lineTension: 0,
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN,
             }]
@@ -463,9 +467,11 @@ const createAllCharts = data => {
             element: 'hospitalStaffInfectedChange',
             title: 'Hospital Staff Infected Day-by-Day Change',
             filter: d => d['hospital_staff']['infected']['total'] > 0,
+            type: 'line',
             datasets: [{
                 label: 'Day-to-Day Change',
                 valueGetter: d => d['hospital_staff']['infected']['daily_diff'],
+                lineTension: 0,
                 borderColor: BLUE_BORDER,
                 backgroundColor: BLUE,
             }]
