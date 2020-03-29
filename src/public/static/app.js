@@ -49,9 +49,9 @@ const setStatus = ok => {
 }
 
 const getLastNumDays = (data, days) => {
-    size = data['history'].length
+    size = data.length
 
-    return data['history'].slice(size - days, size)
+    return data.slice(size - days, size)
 }
 
 const getLast = data => {
@@ -119,24 +119,24 @@ const updateCounters = c => {
 }
 
 const bindDatePicker = data => {
-    const history = data['history']
     const date = document.getElementById('counter-date')
     const slider = document.getElementById('datepicker')
 
     const updateDate = i => {
-        date.innerHTML = history[i]['date']
+        date.innerHTML = data[i]['date']
     }
 
-    updateDate(history.length - 1)
+    updateDate(data.length - 1)
 
-    slider.setAttribute('max', `${history.length - 1}`)
-    slider.setAttribute('value', `${history.length - 1}`)
+    slider.setAttribute('max', `${data.length - 1}`)
+    slider.setAttribute('value', `${data.length - 1}`)
 
     slider.oninput = function() {
         const i = parseInt(this.value)
 
         updateDate(i)
-        updateCounters(history[i])
+        updateCounters(data[i])
+        updateCharts(data.slice(0, i + 1))
     }
 }
 
@@ -155,50 +155,50 @@ const updateCharts = data => {
         { element: 'infected' },
         [{
             label: 'Total Infected',
-            data: data['history'].map(d => d['infected']['total']),
+            data: data.map(d => d['infected']['total']),
             fill: true,
             borderColor: YELLOW_BORDER,
             backgroundColor: YELLOW,
         }],
-        data['history'].map(d => d['date'].slice(5, 10)),
+        data.map(d => d['date'].slice(5, 10)),
     )
 
     createChart(
         { element: 'infectedToday' },
         [{
             label: 'Daily Infected',
-            data: data['history'].map(d => d['infected']['today']),
+            data: data.map(d => d['infected']['today']),
             fill: true,
             borderColor: BLUE_BORDER,
             backgroundColor: BLUE,
         }],
-        data['history'].map(d => d['date'].slice(5, 10)),
+        data.map(d => d['date'].slice(5, 10)),
     )
 
     createChart(
         { element: 'dead' },
         [{
             label: 'Total Deaths',
-            data: data['history'].map(d => d['dead']['total']),
+            data: data.map(d => d['dead']['total']),
             fill: true,
             borderColor: RED_BORDER,
             backgroundColor: RED,
         }],
-        data['history'].map(d => d['date'].slice(5, 10)),
+        data.map(d => d['date'].slice(5, 10)),
     )
 
     createChart(
         { element: 'deadToday' },
         [{
             label: 'Daily Deaths',
-            data: data['history'].map(d => d['dead']['today']),
+            data: data.map(d => d['dead']['today']),
             borderColor: RED_BORDER,
             backgroundColor: RED,
         }],
-        data['history'].map(d => d['date'].slice(5, 10)),
+        data.map(d => d['date'].slice(5, 10)),
     )
 
-    const hData = data['history'].filter(d => d['hospitalized']['general']['total'] > 0)
+    const hData = data.filter(d => d['hospitalized']['general']['total'] > 0)
 
     createChart(
         { element: 'hospitalized', title: 'Hospitalized' },
@@ -219,7 +219,7 @@ const updateCharts = data => {
         hData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hsiData = data['history'].filter(d => d['hospital_staff']['infected']['total'] > 0)
+    const hsiData = data.filter(d => d['hospital_staff']['infected']['total'] > 0)
 
     createChart(
         { element: 'hospitalStaffInfected' },
@@ -233,7 +233,7 @@ const updateCharts = data => {
         hsiData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hsqData = data['history'].filter(d => d['hospital_staff']['quarantined']['total'] > 0)
+    const hsqData = data.filter(d => d['hospital_staff']['quarantined']['total'] > 0)
 
     createChart(
         { element: 'hospitalStaffQuarantined' },
@@ -247,7 +247,7 @@ const updateCharts = data => {
         hsqData.map(d => d['date'].slice(5, 10)),
     )
 
-    const tData = data['history'].filter(d => d['tested']['total'] > 0)
+    const tData = data.filter(d => d['tested']['total'] > 0)
 
     createChart(
         { element: 'tested' },
@@ -281,38 +281,38 @@ const updateCharts = data => {
         { element: 'infectedMA', title: 'Daily New Infections (Moving Average)' },
         [{
             label: '3 day window',
-            data: data['history'].map(d => d['infected']['today_mov_avg_3']),
+            data: data.map(d => d['infected']['today_mov_avg_3']),
             fill: true,
             borderColor: ORANGE_BORDER,
             backgroundColor: ORANGE,
         },
         {
             label: '5 day window',
-            data: data['history'].map(d => d['infected']['today_mov_avg_5']),
+            data: data.map(d => d['infected']['today_mov_avg_5']),
             fill: true,
             borderColor: YELLOW_BORDER,
             backgroundColor: YELLOW,
         }],
-        data['history'].map(d => d['date'].slice(5, 10)),
+        data.map(d => d['date'].slice(5, 10)),
     )
 
     createChart(
         { element: 'infectedDoublingRate', title: 'Infection Doubling Rate' },
         [{
             label: 'Standard (days)',
-            data: data['history'].map(d => d['infected']['doubling_rate']),
+            data: data.map(d => d['infected']['doubling_rate']),
             fill: true,
             borderColor: ORANGE_BORDER,
             backgroundColor: ORANGE,
         },
         {
             label: '3 Day Moving Average (days)',
-            data: data['history'].map(d => d['infected']['doubling_rate_from_mov_avg_3']),
+            data: data.map(d => d['infected']['doubling_rate_from_mov_avg_3']),
             fill: true,
             borderColor: YELLOW_BORDER,
             backgroundColor: YELLOW,
         }],
-        data['history'].map(d => d['date'].slice(5, 10)),
+        data.map(d => d['date'].slice(5, 10)),
     )
 
     const tcpData = getLastNumDays(data, 14)
@@ -329,7 +329,7 @@ const updateCharts = data => {
         tcpData.map(d => d['date'].slice(5, 10)),
     )
 
-    const thrpData = data['history'].filter(d => d['tested']['total'] > 0)
+    const thrpData = data.filter(d => d['tested']['total'] > 0)
 
     createChart(
         { element: 'testedHitRatioPercent', title: 'Test Hit Ratio' },
@@ -343,7 +343,7 @@ const updateCharts = data => {
         thrpData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hcpData = data['history'].filter(d => d['hospitalized']['general']['total'] > 0)
+    const hcpData = data.filter(d => d['hospitalized']['general']['total'] > 0)
 
     createChart(
         { element: 'hospitalizedChange', title: 'Daily Hospitalizations' },
@@ -364,7 +364,7 @@ const updateCharts = data => {
         hcpData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hmaData = data['history'].filter(d => d['hospitalized']['general']['total'] > 0)
+    const hmaData = data.filter(d => d['hospitalized']['general']['total'] > 0)
 
     createChart(
         { element: 'hospitalizedMA', title: 'Daily Hospitalization Moving Average' },
@@ -399,7 +399,7 @@ const updateCharts = data => {
         hdrData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hsicpData = data['history'].filter(d => d['hospital_staff']['infected']['total'] > 0)
+    const hsicpData = data.filter(d => d['hospital_staff']['infected']['total'] > 0)
 
     createChart(
         { element: 'hospitalStaffInfectedChange', title: 'Hospital Staff Infected Day-by-Day Change' },
@@ -432,9 +432,9 @@ const loadData = async() => {
     fetch('/api').then(async r => {
         const data = await r.json()
 
-        bindDatePicker(data)
         updateCurrent(data)
-        updateCharts(data)
+        bindDatePicker(data['history'])
+        updateCharts(data['history'])
     })
 }
 

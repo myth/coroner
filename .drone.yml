@@ -15,11 +15,8 @@ steps:
         cache_from:
           - mythern/coroner:latest
     when:
-        event: [push]
-    volumes:
-      - name: docker-socket
-        host:
-            path: /var/run/docker.sock:/var/run/docker.sock
+        event:
+        - push
 
   # Copy compose-file
   - name: configure
@@ -33,7 +30,10 @@ steps:
         target: /srv/www/coroner/
         source: docker-compose.yml
     when:
-        event: [push]
+        event:
+        - push
+        branch:
+        - master
 
   # Pull fresh images, restart, cleanup and report status
   - name: deploy
@@ -56,4 +56,7 @@ steps:
         - docker image prune -f
         - docker-compose ps
     when:
-        event: [push]
+        event:
+        - push
+        branch:
+        - master
