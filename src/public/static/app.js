@@ -318,9 +318,9 @@ const updateCharts = data => {
     const tcpData = getLastNumDays(data, 14)
 
     createChart(
-        { element: 'testedChange', title: 'Daily New Tests (Last 14 days)' },
+        { element: 'testedChange', title: 'Testing Day-to-Day Change (Last 14 days)' },
         [{
-            label: 'Daily Change',
+            label: 'Day-to-Day Change',
             data: tcpData.map(d => d['tested']['daily_diff']),
             fill: true,
             borderColor: GREEN_BORDER,
@@ -399,12 +399,12 @@ const updateCharts = data => {
         hdrData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hsicpData = getLastNumDays(data, 14)
+    const hsicpData = data['history'].filter(d => d['hospital_staff']['infected']['total'] > 0)
 
     createChart(
-        { element: 'hospitalStaffInfectedChange', title: 'Daily Hospital Staff Infected (Last 14 days)' },
+        { element: 'hospitalStaffInfectedChange', title: 'Hospital Staff Infected Day-by-Day Change' },
         [{
-            label: 'Daily Change',
+            label: 'Day-to-Day Change',
             data: hsicpData.map(d => d['hospital_staff']['infected']['daily_diff']),
             fill: true,
             borderColor: BLUE_BORDER,
