@@ -343,20 +343,20 @@ const updateCharts = data => {
         thrpData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hcpData = getLastNumDays(data, 14)
+    const hcpData = data['history'].filter(d => d['hospitalized']['general']['total'] > 0)
 
     createChart(
-        { element: 'hospitalizedChange', title: 'Daily Hospitalizations (Last 14 days)' },
+        { element: 'hospitalizedChange', title: 'Daily Hospitalizations' },
         [{
             label: 'General',
-            data: hcpData.map(d => d['hospitalized']['general']['daily_diff']),
+            data: hcpData.map(d => d['hospitalized']['general']['today']),
             fill: true,
             borderColor: PURPLE_BORDER,
             backgroundColor: PURPLE,
         },
         {
             label: 'Critical',
-            data: hcpData.map(d => d['hospitalized']['critical']['daily_diff']),
+            data: hcpData.map(d => d['hospitalized']['critical']['today']),
             fill: true,
             borderColor: ORANGE_BORDER,
             backgroundColor: 'rgba(201, 78, 21, 0.5)',
@@ -364,10 +364,10 @@ const updateCharts = data => {
         hcpData.map(d => d['date'].slice(5, 10)),
     )
 
-    const hmaData = getLastNumDays(data, 14)
+    const hmaData = data['history'].filter(d => d['hospitalized']['general']['total'] > 0)
 
     createChart(
-        { element: 'hospitalizedMA', title: 'Daily Hospitalization Moving Average (Last 14 days)' },
+        { element: 'hospitalizedMA', title: 'Daily Hospitalization Moving Average' },
         [{
             label: 'General (3 day window)',
             data: hmaData.map(d => d['hospitalized']['general']['today_mov_avg_3']),
