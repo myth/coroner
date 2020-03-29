@@ -190,6 +190,8 @@ const createChart = (originalData, opts) => {
                 chart.data.datasets[i].data = newData.map(opts.datasets[i].valueGetter)
             }
 
+            chart.data.labels = newData.map(d => d['date'].slice(5, 10))
+
             chart.update()
         }
     }
