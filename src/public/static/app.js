@@ -320,6 +320,7 @@ const createAllCharts = data => {
         {
             element: 'infectedMA',
             title: 'Daily New Infections (Moving Average)',
+            type: 'line',
             datasets: [{
                 label: '3 day window',
                 valueGetter: d => d['infected']['today_mov_avg_3'],
@@ -431,6 +432,7 @@ const createAllCharts = data => {
             element: 'hospitalizedMA',
             title: 'Daily Hospitalization Moving Average',
             filter: d => d['hospitalized']['general']['total'] > 0,
+            type: 'line',
             datasets: [{
                 label: 'General (3 day window)',
                 valueGetter: d => d['hospitalized']['general']['today_mov_avg_3'],
