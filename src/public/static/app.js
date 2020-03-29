@@ -20,6 +20,7 @@ const LINE_TENSION = 0
 
 const OPTIONS = {
     responsive: false,
+    animation: false,
     scales: {
         xAxes: [{
             ticks: {
