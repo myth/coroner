@@ -16,8 +16,6 @@ const GREEN_BORDER = 'rgba(116, 209, 29, 1.0)'
 const YELLOW_BORDER = 'rgba(209, 182, 29, 1.0)'
 const PURPLE_BORDER = 'rgba(136, 26, 209, 1.0)'
 
-const LINE_TENSION = 0
-
 const OPTIONS = {
     responsive: false,
     animation: false,
@@ -35,6 +33,10 @@ const OPTIONS = {
             gridLines: {
                 display: true,
                 color: '#2a2a2a'
+            },
+            ticks: {
+                autoSkip: true,
+                maxTicksLimit: 10
             }
         }]
     }
@@ -71,18 +73,41 @@ const getPaddingFrom = data => {
     return data.slice(0, data.length - 1).map(d => null)
 }
 
+const logTickBuilder = chartObj => {
+    const ticks = [1, 10, 100, 1000, 10000];
+    chartObj.ticks.splice(0, chartObj.ticks.length);
+    chartObj.ticks.push(...ticks)
+}
+
+const logTickMapper = (value, index, values) => {
+    if (value === 1000000) return "1M"
+    if (value === 100000) return "100K"
+    if (value === 10000) return "10K"
+    if (value === 1000) return "1K"
+    if (value === 100) return "100"
+    if (value === 10) return "10"
+    if (value === 0) return "0"
+    return null;
+}
+
 const initChart = (opts, datasets, labels) => {
     const ctx = document.getElementById(opts.element).getContext('2d')
     const type = opts.type || 'bar'
-    const stacked = opts.stacked || false
 
-    const globalOpts = {...OPTIONS}
+    // Hacky deep copy
+    const globalOpts = JSON.parse(JSON.stringify(OPTIONS))
 
-    if (opts.log) globalOpts.scales.yAxes[0].type = 'logarithmic'
-    if (opts.stacked) {
-        globalOpts.scales.xAxes[0].stacked = stacked
-        globalOpts.scales.yAxes[0].stacked = stacked
+    if (opts.logX) {
+        globalOpts.scales.xAxes[0].type = 'logarithmic'
+        globalOpts.scales.xAxes[0].afterBuildTicks = logTickBuilder
+        globalOpts.scales.xAxes[0].ticks.callback = logTickMapper
     }
+    if (opts.logY) {
+        globalOpts.scales.yAxes[0].type = 'logarithmic'
+        globalOpts.scales.yAxes[0].afterBuildTicks = logTickBuilder
+        globalOpts.scales.yAxes[0].ticks.callback = logTickMapper
+    }
+
     if (opts.title) globalOpts.title = {
         display: true,
         text: opts.title
@@ -168,11 +193,22 @@ const createChart = (originalData, opts) => {
         return filteredData
     }
 
+    const getLabels = ldata => {
+        if (opts.labelGetter) return ldata.map(opts.labelGetter)
+        else return data.map(d => d['date'].slice(5, 10))
+    }
+
     const data = prepareData(originalData)
-    const labels = data.map(d => d['date'].slice(5, 10))
+    const labels = getLabels(data)
 
     const chart = initChart(
-        { element: opts.element, title: opts.title, type: opts.type },
+        {
+            element: opts.element,
+            title: opts.title,
+            type: opts.type,
+            logX: opts.logX,
+            logY: opts.logY
+        },
         opts.datasets.map(d => {
             return {
                 ...d,
@@ -191,7 +227,7 @@ const createChart = (originalData, opts) => {
                 chart.data.datasets[i].data = newData.map(opts.datasets[i].valueGetter)
             }
 
-            chart.data.labels = newData.map(d => d['date'].slice(5, 10))
+            chart.data.labels = getLabels(newData)
 
             chart.update()
         }
@@ -372,6 +408,26 @@ const createAllCharts = data => {
                 lineTension: 0,
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW,
+            }]
+        }
+    ))
+
+    charts.push(createChart(
+        data,
+        {
+            element: 'infectedVsDailyInfected',
+            title: 'Daily Infected vs Total Infected (Exponential growth measure)',
+            type: 'line',
+            logX: true,
+            logY: true,
+            labelGetter: d => d['infected']['total'],
+            datasets: [{
+                label: 'Daily Infections (3 day moving average)',
+                valueGetter: d => { return { x: d['infected']['total'], y: d['infected']['today_mov_avg_3'] } },
+                lineTension: 0.2,
+                fill: false,
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE,
             }]
         }
     ))
