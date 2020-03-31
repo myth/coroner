@@ -378,43 +378,6 @@ const createAllCharts = data => {
     charts.push(createChart(
         data,
         {
-            element: 'infectedDoublingRate',
-            title: 'Infection Doubling Rate',
-            datasets: [{
-                label: 'Standard (days)',
-                valueGetter: d => d['infected']['doubling_rate'],
-                borderColor: ORANGE_BORDER,
-                backgroundColor: ORANGE,
-            },
-            {
-                label: '3 Day Moving Average (days)',
-                valueGetter: d => d['infected']['doubling_rate_from_mov_avg_3'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            }]
-        }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'infectedChangePercent',
-            title: 'Daily New Infections (Last 14 days)',
-            window: 14,
-            type: 'line',
-            datasets: [{
-                label: 'Change (%)',
-                valueGetter: d => d['infected']['daily_diff_percent'],
-                lineTension: 0,
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            }]
-        }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
             element: 'infectedVsDailyInfected',
             title: 'Daily Infected vs Total Infected (Exponential growth measure)',
             type: 'line',
@@ -435,14 +398,47 @@ const createAllCharts = data => {
     charts.push(createChart(
         data,
         {
+            element: 'infectedDoublingRate',
+            title: 'Infection Doubling Rate',
+            datasets: [{
+                label: 'Standard (days)',
+                valueGetter: d => d['infected']['doubling_rate'],
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE,
+            },
+            {
+                label: '3 Day Moving Average (days)',
+                valueGetter: d => d['infected']['doubling_rate_from_mov_avg_3'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        }
+    ))
+
+    charts.push(createChart(
+        data,
+        {
+            element: 'infectedChange',
+            title: 'Infections Day-To-Day Change (Last 14 days)',
+            window: 14,
+            datasets: [{
+                label: 'Daily Infected',
+                valueGetter: d => d['infected']['daily_diff'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        }
+    ))
+
+    charts.push(createChart(
+        data,
+        {
             element: 'testedChange',
             title: 'Testing Day-to-Day Change (Last 14 days)',
             window: 14,
-            type: 'line',
             datasets: [{
-                label: 'Day-to-Day Change',
+                label: 'Daily Tested',
                 valueGetter: d => d['tested']['daily_diff'],
-                lineTension: 0,
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN,
             }]
@@ -528,11 +524,9 @@ const createAllCharts = data => {
             element: 'hospitalStaffInfectedChange',
             title: 'Hospital Staff Infected Day-by-Day Change',
             filter: d => d['hospital_staff']['infected']['total'] > 0,
-            type: 'line',
             datasets: [{
-                label: 'Day-to-Day Change',
+                label: 'Daily Change',
                 valueGetter: d => d['hospital_staff']['infected']['daily_diff'],
-                lineTension: 0,
                 borderColor: BLUE_BORDER,
                 backgroundColor: BLUE,
             }]
