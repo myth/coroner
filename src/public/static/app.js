@@ -195,7 +195,7 @@ const createChart = (originalData, opts) => {
 
     const getLabels = ldata => {
         if (opts.labelGetter) return ldata.map(opts.labelGetter)
-        else return data.map(d => d['date'].slice(5, 10))
+        else return ldata.map(d => d['date'].slice(5, 10))
     }
 
     const data = prepareData(originalData)
