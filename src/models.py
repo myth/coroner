@@ -604,7 +604,7 @@ class Stats:
                 update_from_data(current, Stats(d), data[k])
             else:
                 if k not in data:
-                    k = d - timedelta(days=1).isoformat()
+                    k = (d - timedelta(days=1)).isoformat()
 
                 update_from_data(current, stats[i-1], data[k])
 
