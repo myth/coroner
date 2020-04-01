@@ -108,13 +108,29 @@ const initChart = (opts, datasets, labels) => {
     }
 
     if (opts.labelX) {
-        globalOpts.scales.xAxes[0].scaleLabel.display = true
-        globalOpts.scales.xAxes[0].scaleLabel.display = opts.labelX
-        
+        globalOpts.scales.xAxes[0].scaleLabel = {
+            display: true,
+            labelString: opts.labelX
+        }
     }
     if (opts.labelY) {
-        globalOpts.scales.yAxes[0].scaleLabel.display = true
-        globalOpts.scales.yAxes[0].scaleLabel.labelString = opts.labelY
+        globalOpts.scales.yAxes[0].scaleLabel = {
+            display: true,
+            labelString: opts.labelY
+        }
+    }
+
+    if (opts.minX !== undefined) {
+        globalOpts.scales.xAxes[0].ticks = { min: opts.minX }
+    }
+    if (opts.minY !== undefined) {
+        globalOpts.scales.yAxes[0].ticks = { min: opts.minY }
+    }
+    if (opts.maxX !== undefined) {
+        globalOpts.scales.xAxes[0].ticks = { max: opts.maxX }
+    }
+    if (opts.maxY !== undefined) {
+        globalOpts.scales.yAxes[0].ticks = { max: opts.maxX }
     }
 
     if (opts.title) globalOpts.title = {

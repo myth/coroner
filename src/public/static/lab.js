@@ -18,7 +18,14 @@ const createLabChart = (numDays, initialData) => {
     [S, I, R] = initialData
 
     const chart = initChart(
-        { element: 'labChart', type: 'line', title: 'SIR Model Results' },
+        {
+            element: 'labChart',
+            type: 'line',
+            title: 'SIR Model Results',
+            labelX: 'Days',
+            labelY: 'People',
+            minY: 0,
+        },
         [{
             label: 'Susceptible',
             data: S,
