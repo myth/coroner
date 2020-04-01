@@ -1,5 +1,4 @@
 // Chart config
-Chart.defaults.global.elements.point.radius = 3
 Chart.defaults.global.elements.line.borderWidth = 1
 
 const ORANGE = 'rgba(201, 78, 21, 0.5)'
@@ -106,6 +105,16 @@ const initChart = (opts, datasets, labels) => {
         globalOpts.scales.yAxes[0].type = 'logarithmic'
         globalOpts.scales.yAxes[0].afterBuildTicks = logTickBuilder
         globalOpts.scales.yAxes[0].ticks.callback = logTickMapper
+    }
+
+    if (opts.labelX) {
+        globalOpts.scales.xAxes[0].scaleLabel.display = true
+        globalOpts.scales.xAxes[0].scaleLabel.display = opts.labelX
+        
+    }
+    if (opts.labelY) {
+        globalOpts.scales.yAxes[0].scaleLabel.display = true
+        globalOpts.scales.yAxes[0].scaleLabel.labelString = opts.labelY
     }
 
     if (opts.title) globalOpts.title = {
@@ -557,6 +566,7 @@ const loadData = async() => {
         const charts = createAllCharts(data['history'])
         updateCurrent(data)
         bindDatePicker(data['history'], charts)
+        const lab = new SimulationLab(150)
     })
 }
 

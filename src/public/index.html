@@ -161,6 +161,68 @@
     <div class="flex">
       <canvas id="hospitalStaffInfectedDoublingRate" width="800" height="300"></canvas>
     </div>
+    <h2>The Lab</h2>
+    <div class="flex">
+      <p id="lab-description">
+        The SIR model is a simple, yet widely used epidemiological model in its various forms. 
+        Adjust the values below to see various outcomes. The sliders control the rate of change. 
+        Transmission controls how fast the disease is transmitted to susceptible individuals per day, 
+        and recovery is how many days it on average takes to recover.<br /><br />
+
+        S&#8320;, I&#8320; &amp; R&#8320; defines the initial values for the simulation. The entire
+        population should be susceptible in Norway for COVID-19. There must also be at least one infected.
+        The number of recovered people will be zero at the start of an epedemic..
+        The sum of S&#8320;, I&#8320; &amp; R&#8320; should equal the total Norwegian population.
+      </p>
+    </div>
+    <div class="flex">
+      <div class="counter-group">
+        <div class="counter counter-left">
+          <div class="counter-name">Susceptible (S&#8320;)</div>
+          <div class="counter-value">
+            <div id="lab-s">5367579</div>
+          </div>
+        </div>
+        <div class="counter counter-left">
+          <div class="counter-name">Infectious (I&#8320;)</div>
+          <div class="counter-value">
+            <form oninput="labIValue.value=parseFloat(labI.value)">
+              <input type="range" name="labI" min=1 max=1000 value=1 step=1 class="slider slider-lab" id="lab-i" />
+              <output name="labIValue" for="labI" class="lab-output" value=1 id="lab-i-value">1</output>
+            </form>
+          </div>
+        </div>
+        <div class="counter counter-left">
+          <div class="counter-name">Removed (R&#8320;)</div>
+          <div class="counter-value">
+            <div id="lab-r">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="counter-group">
+        <div class="counter counter-right">
+          <div class="counter-name">Transmission</div>
+          <div class="counter-value">
+            <form oninput="labBetaValue.value=parseFloat(labBeta.value)">
+              <input type="range" name="labBeta" min=0.0 max=1.0 value=0.4 step=0.01 class="slider slider-lab" id="lab-beta" />
+              <output name="labBetaValue" for="labBeta" class="lab-output" value=0.4>0.4</output>
+            </form>
+          </div>
+        </div>
+        <div class="counter counter-right">
+          <div class="counter-name">Recovery</div>
+          <div class="counter-value">
+            <form oninput="labGammaValue.value=parseInt(labGamma.value)">
+              <input type="range" name="labGamma" min=0 max=30 value=10 step=1 class="slider slider-lab" id="lab-gamma" />
+              <output name="labGammaValue" for="labGamma" class="lab-output" value=14>14</output>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex">
+      <canvas id="labChart" width="800" height="400"></canvas>
+    </div>
     <div class="flex">
       <div id="logo">
         <img alt="Coronavirus (COVID-19)" title="Coronavirus (COVID-19)" src="/static/coronavirus.png" />
@@ -182,6 +244,8 @@
   </main>
 </body>
 
+<script src="/static/odex.js"></script>
+<script src="/static/lab.js"></script>
 <script src="/static/app.js"></script>
 
 </html>
