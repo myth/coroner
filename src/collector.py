@@ -32,6 +32,7 @@ class Collector:
         self.running = False
         self.status = 'ok'
         self.stats = {}
+        self.stats_objects = []
 
         LOG.debug('Collector initialized')
 
@@ -103,6 +104,9 @@ class Collector:
                 self.stats['status'] = 'error'
 
                 LOG.error(f'Failed to update backup file {filename}: {e}')
+
+    def timeseries(self, field):
+        return [getattr(o, field) for o in self.stats_objects]
 
     async def _collect_case_history_vg(self):
         async with self.session.get(VG_CASES_TS) as response:
@@ -206,13 +210,12 @@ class Collector:
             combined[k].update(v)
 
 
-        stats = Stats.assemble(combined)
-
+        self.stats_objects = Stats.assemble(combined)
         self.stats = {
             'status': self.status,
             'updated': get_now_local().isoformat(),
-            'current': stats[-1].json(),
-            'history': [s.json() for s in stats]
+            'current': self.stats_objects[-1].json(),
+            'history': [s.json() for s in self.stats_objects]
         }
 
         LOG.debug('Statistics updated')
