@@ -3,6 +3,7 @@ from datetime import datetime
 from json import dumps
 from logging import getLogger
 from os.path import abspath, dirname, join
+from random import randint
 from sys import stdout
 from traceback import print_exc
 from typing import List, Union
@@ -109,7 +110,7 @@ class Collector:
         return [getattr(o, field) for o in self.stats_objects]
 
     async def _collect_case_history_vg(self):
-        async with self.session.get(VG_CASES_TS) as response:
+        async with self.session.get(f'{VG_CASES_TS}&buster={randint(0, 100000)}') as response:
             if response.status == 200:
                 data = await response.json()
 
@@ -137,7 +138,7 @@ class Collector:
                 return {}
 
     async def _collect_hospital_history_vg(self):
-        async with self.session.get(VG_HOSPITALS_TS) as response:
+        async with self.session.get(f'{VG_HOSPITALS_TS}?buster={randint(0, 100000)}') as response:
             if response.status == 200:
                 data = await response.json()
 
@@ -167,7 +168,7 @@ class Collector:
                 return {}
 
     async def _collect_testing_history_vg(self):
-        async with self.session.get(VG_TESTED_TS) as response:
+        async with self.session.get(f'{VG_TESTED_TS}?buster={randint(0, 100000)}') as response:
             if response.status == 200:
                 data = await response.json()
 
