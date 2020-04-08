@@ -12,7 +12,7 @@ services:
       - default
       - traefik
     volumes:
-      - data:/app/data
+      - data:/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.coroner.rule=Host(`coroner.ulv.io`)"
