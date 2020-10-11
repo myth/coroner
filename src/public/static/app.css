@@ -2,18 +2,18 @@ html,
 body {
   font-family: Verdana, sans-serif;
   background-color: #111111;
-  color: #aaa;
+  color: #ccc;
   font-size: 1rem;
 }
 
 a,
 a:visited {
-  color: #4e7cdf;
+  color: #84a1df;
   text-decoration: none;
 }
 a:active,
 a:hover {
-  color: #7fa3f1;
+  color: #c6d1e9;
   text-decoration: underline;
 }
 
@@ -27,7 +27,7 @@ h2 {
   margin: 50px 0px;
   font-size: 1.5rem;
   text-align: center;
-  color: rgb(184, 146, 75)
+  color: rgb(228, 176, 80)
 }
 
 h3 {
@@ -89,7 +89,7 @@ p.description {
 }
 
 .counter-value {
-  color: cadetblue;
+  color: rgb(126, 201, 204);
 }
 
 /* Coronaslider */
@@ -117,7 +117,7 @@ p.description {
   border-radius: 5px;  
   background: #2e2e2e;
   outline: none;
-  opacity: 0.7;
+  opacity: 0.8;
   -webkit-transition: .2s;
   transition: opacity .2s;
   cursor: pointer;
@@ -130,7 +130,7 @@ p.description {
   height: 16px;
   border-radius: 50%;
   box-shadow: 0 0 5px 0 #888;
-  background: rgb(184, 146, 75);
+  background: rgb(207, 164, 85);
   cursor: pointer;
 }
 
@@ -139,53 +139,13 @@ p.description {
   height: 16px;
   border-radius: 50%;
   box-shadow: 0 0 5px 0 #888;
-  background: rgb(184, 146, 75);
+  background: rgb(207, 164, 85);
   cursor: pointer;
 }
 
 #logo {
   text-align: center;
   margin-top: 100px;
-}
-
-/* Lab */
-
-#lab-description {
-  width: 800px;
-  margin-bottom: 50px;
-  text-align: center;
-}
-
-.slider-lab {
-  width: 200px;
-}
-
-.lab-output {
-  display: inline-block;
-  width: 30px;
-  text-align: right;
-}
-
-#lab-i-value {
-  width: 50px;
-}
-
-#lab-i {
-  width: 175px;
-}
-
-.lab-input {
-  background: transparent;
-  color: cadetblue;
-  display: inline-block;
-  width: 100px;
-  outline: none;
-  border: 0;
-  border-bottom: 1px solid rgba(184, 146, 75, 0.5);
-  font-size: 1rem;
-  margin: 0;
-  padding: 0;
-  text-align: right;
 }
 
 /* Footer */
@@ -212,5 +172,5 @@ p.description {
   background-color: transparent;
 }
 .socialicon svg:hover {
-  fill: rgb(184, 146, 75);
+  fill: rgb(207, 164, 85);
 }

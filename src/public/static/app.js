@@ -1,12 +1,12 @@
 // Chart config
 Chart.defaults.global.elements.line.borderWidth = 1
 
-const ORANGE = 'rgba(201, 78, 21, 0.5)'
-const RED = 'rgba(209, 29, 29, 0.5)'
-const BLUE = 'rgba(29, 128, 209, 0.5)'
-const GREEN = 'rgba(116, 209, 29, 0.5)'
-const YELLOW = 'rgba(209, 182, 29, 0.5)'
-const PURPLE = 'rgba(136, 26, 209, 0.5)'
+const ORANGE = 'rgba(201, 78, 21, 0.7)'
+const RED = 'rgba(209, 29, 29, 0.7)'
+const BLUE = 'rgba(29, 128, 209, 0.7)'
+const GREEN = 'rgba(116, 209, 29, 0.7)'
+const YELLOW = 'rgba(209, 182, 29, 0.7)'
+const PURPLE = 'rgba(136, 26, 209, 0.7)'
 
 const ORANGE_BORDER = 'rgba(201, 78, 21, 1.0)'
 const RED_BORDER = 'rgba(209, 29, 29, 1.0)'
@@ -324,13 +324,13 @@ const createAllCharts = data => {
                 label: 'Critical',
                 valueGetter: d => d['hospitalized']['critical']['total'],
                 borderColor: ORANGE_BORDER,
-                backgroundColor: 'rgba(201, 78, 21, 0.5)',
+                backgroundColor: ORANGE,
             },
             {
                 label: 'Total',
                 valueGetter: d => d['hospitalized']['general']['total'],
                 borderColor: PURPLE_BORDER,
-                backgroundColor: PURPLE,
+                backgroundColor: PURPLE_BORDER,
             }]
         },
     ))
@@ -355,18 +355,20 @@ const createAllCharts = data => {
         data,
         {
             element: 'infectedMA',
-            title: 'Daily New Infections (Moving Average)',
+            title: 'Daily New Infections (Moving Average last 30 days)',
+            window: 30,
+            type: 'line',
             datasets: [{
                 label: '3 day window',
                 valueGetter: d => d['infected']['today_mov_avg_3'],
-                borderColor: ORANGE_BORDER,
-                backgroundColor: ORANGE,
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
             },
             {
                 label: '5 day window',
                 valueGetter: d => d['infected']['today_mov_avg_5'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE,
             }]
         }
     ))
@@ -375,7 +377,8 @@ const createAllCharts = data => {
         data,
         {
             element: 'infectedDoublingRate',
-            title: 'Infection Doubling Rate',
+            title: 'Infection Doubling Rate (Last 30 days)',
+            window: 30,
             datasets: [{
                 label: 'Standard (days)',
                 valueGetter: d => d['infected']['doubling_rate'],
@@ -395,8 +398,8 @@ const createAllCharts = data => {
         data,
         {
             element: 'infectedChange',
-            title: 'Infections Day-To-Day Change (Last 14 days)',
-            window: 14,
+            title: 'Infections Day-To-Day Change (Last 30 days)',
+            window: 30,
             datasets: [{
                 label: 'Daily Infected',
                 valueGetter: d => d['infected']['daily_diff'],
@@ -410,8 +413,8 @@ const createAllCharts = data => {
         data,
         {
             element: 'testedChange',
-            title: 'Testing Day-to-Day Change (Last 14 days)',
-            window: 14,
+            title: 'Testing Day-to-Day Change (Last 30 days)',
+            window: 30,
             datasets: [{
                 label: 'Daily Tested',
                 valueGetter: d => d['tested']['daily_diff'],
@@ -440,8 +443,9 @@ const createAllCharts = data => {
         data,
         {
             element: 'hospitalizedChange',
-            title: 'Daily Hospitalizations',
+            title: 'Daily Hospitalizations (Last 30 days)',
             filter: d => d['hospitalized']['general']['total'] > 0,
+            window: 30,
             datasets: [{
                 label: 'General',
                 valueGetter: d => d['hospitalized']['general']['today'],
@@ -452,7 +456,7 @@ const createAllCharts = data => {
                 label: 'Critical',
                 valueGetter: d => d['hospitalized']['critical']['today'],
                 borderColor: ORANGE_BORDER,
-                backgroundColor: 'rgba(201, 78, 21, 0.5)',
+                backgroundColor: ORANGE,
             }]
         }
     ))
@@ -461,8 +465,9 @@ const createAllCharts = data => {
         data,
         {
             element: 'hospitalizedMA',
-            title: 'Daily Hospitalization Moving Average',
+            title: 'Daily Hospitalization Moving Average (Last 30 days)',
             filter: d => d['hospitalized']['general']['total'] > 0,
+            window: 30,
             datasets: [{
                 label: 'General (3 day window)',
                 valueGetter: d => d['hospitalized']['general']['today_mov_avg_3'],
@@ -473,7 +478,7 @@ const createAllCharts = data => {
                 label: 'Critical (3 day window)',
                 valueGetter: d => d['hospitalized']['critical']['today_mov_avg_3'],
                 borderColor: ORANGE_BORDER,
-                backgroundColor: 'rgba(201, 78, 21, 0.5)',
+                backgroundColor: ORANGE,
             }]
         }
     ))
