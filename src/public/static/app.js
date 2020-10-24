@@ -379,17 +379,18 @@ const createAllCharts = data => {
             element: 'infectedDoublingRate',
             title: 'Infection Doubling Rate (Last 30 days)',
             window: 30,
+            type: 'line',
             datasets: [{
                 label: 'Standard (days)',
                 valueGetter: d => d['infected']['doubling_rate'],
-                borderColor: ORANGE_BORDER,
-                backgroundColor: ORANGE,
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
             },
             {
                 label: '3 Day Moving Average (days)',
                 valueGetter: d => d['infected']['doubling_rate_from_mov_avg_3'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
+                borderColor: RED_BORDER,
+                backgroundColor: RED,
             }]
         }
     ))
@@ -400,6 +401,7 @@ const createAllCharts = data => {
             element: 'infectedChange',
             title: 'Infections Day-To-Day Change (Last 30 days)',
             window: 30,
+            type: 'line',
             datasets: [{
                 label: 'Daily Infected',
                 valueGetter: d => d['infected']['daily_diff'],
@@ -415,6 +417,7 @@ const createAllCharts = data => {
             element: 'testedChange',
             title: 'Testing Day-to-Day Change (Last 30 days)',
             window: 30,
+            type: 'line',
             datasets: [{
                 label: 'Daily Tested',
                 valueGetter: d => d['tested']['daily_diff'],
@@ -446,6 +449,7 @@ const createAllCharts = data => {
             title: 'Daily Hospitalizations (Last 30 days)',
             filter: d => d['hospitalized']['general']['total'] > 0,
             window: 30,
+            type: 'line',
             datasets: [{
                 label: 'General',
                 valueGetter: d => d['hospitalized']['general']['today'],
@@ -468,6 +472,7 @@ const createAllCharts = data => {
             title: 'Daily Hospitalization Moving Average (Last 30 days)',
             filter: d => d['hospitalized']['general']['total'] > 0,
             window: 30,
+            type: 'line',
             datasets: [{
                 label: 'General (3 day window)',
                 valueGetter: d => d['hospitalized']['general']['today_mov_avg_3'],
