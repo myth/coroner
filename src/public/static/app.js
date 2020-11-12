@@ -267,38 +267,12 @@ const createAllCharts = data => {
     charts.push(createChart(
         data,
         {
-            element: 'infected',
-            datasets: [{
-                label: 'Total Infected',
-                valueGetter: d => d['infected']['total'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            }]
-        },
-    ))
-
-    charts.push(createChart(
-        data,
-        {
             element: 'infectedToday',
             datasets: [{
                 label: 'Daily Infected',
                 valueGetter: d => d['infected']['today'],
                 borderColor: BLUE_BORDER,
                 backgroundColor: BLUE,
-            }]
-        },
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'dead',
-            datasets: [{
-                label: 'Total Deaths',
-                valueGetter: d => d['dead']['total'],
-                borderColor: RED_BORDER,
-                backgroundColor: RED,
             }]
         },
     ))
@@ -351,10 +325,36 @@ const createAllCharts = data => {
             element: 'tested',
             filter: d => d['tested']['total'] > 0,
             datasets: [{
-                label: 'Tested Daily',
+                label: 'Daily Tested',
                 valueGetter: d => d['tested']['today'],
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN,
+            }]
+        },
+    ))
+
+    charts.push(createChart(
+        data,
+        {
+            element: 'infected',
+            datasets: [{
+                label: 'Total Infected',
+                valueGetter: d => d['infected']['total'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            }]
+        },
+    ))
+
+    charts.push(createChart(
+        data,
+        {
+            element: 'dead',
+            datasets: [{
+                label: 'Total Deaths',
+                valueGetter: d => d['dead']['total'],
+                borderColor: RED_BORDER,
+                backgroundColor: RED,
             }]
         },
     ))
