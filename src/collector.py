@@ -16,13 +16,11 @@ from utils import get_now_local, get_today_local
 
 LOG = getLogger(__name__)
 
-BACKUP_INTERVAL = 7200 # Every 2 hours
-COLLECT_INTERVAL = 60  # Every minute
+BACKUP_INTERVAL = 7200  # Every 2 hours
+COLLECT_INTERVAL = 3600  # Every hour
 
 # Data sources
-VG_CASES_TS = 'https://redutv-api.vg.no/corona/v1/sheets/norway-region-data?exclude=cases'
-VG_HOSPITALS_TS = 'https://redutv-api.vg.no/corona/v1/areas/country/reports'
-VG_TESTED_TS = 'https://redutv-api.vg.no/corona/v1/sheets/fhi/tested'
+VG_MAIN_STATS = 'https://redutv-api.vg.no/corona/v1/areas/country/key'
 
 
 class Collector:
@@ -71,10 +69,8 @@ class Collector:
 
             try:
                 case_history = await self._collect_case_history_vg()
-                hospital_history = await self._collect_hospital_history_vg()
-                test_history = await self._collect_testing_history_vg()
 
-                self._populate_timeseries(case_history, hospital_history, test_history)
+                self._populate_timeseries(case_history)
 
                 self.stats['status'] = 'ok'
 
@@ -110,83 +106,91 @@ class Collector:
         return [getattr(o, field) for o in self.stats_objects]
 
     async def _collect_case_history_vg(self):
-        async with self.session.get(f'{VG_CASES_TS}&buster={randint(0, 100000)}') as response:
+        async with self.session.get(f'{VG_MAIN_STATS}') as response:
             if response.status == 200:
                 data = await response.json()
 
-                cases = {}
+                (
+                    deaths,
+                    cases,
+                    tested,
+                    positive_share,
+                    trend_cases,
+                    hospitalized,
+                    intensive_care,
+                    respirator
+                ) = data['items']
 
-                infected = data['timeseries']['total']['confirmed']
-                infected_new = data['timeseries']['new']['confirmed']
-                dead = data['timeseries']['total']['dead']
-                dead_new = data['timeseries']['new']['dead']
+                stats = {}
 
-                for k, v in infected.items():
-                    cases[k] = { 'infected': v }
+                total = 0
+                for row in cases['data']:
+                    d = row['date']
 
-                for k, v in infected_new.items():
-                    cases[k]['infected_new'] = v
+                    if d not in stats:
+                        stats[d] = {}
 
-                for k, v in dead.items():
-                    cases[k]['dead'] = v
+                    total += row['value']
 
-                for k, v in dead_new.items():
-                    cases[k]['dead_new'] = v
+                    stats[d]['infected'] = total
+                    stats[d]['infected_new'] = row['value']
 
-                return cases
+                total = 0
+                for row in deaths['data']:
+                    d = row['date']
+
+                    if d not in stats:
+                        stats[d] = {}
+
+                    total += row['value']
+
+                    stats[d]['dead'] = total
+                    stats[d]['dead_new'] = row['value']
+
+                for row in tested['data']:
+                    d = row['date']
+
+                    if d not in stats:
+                        stats[d] = {}
+
+                    stats[d]['tested'] = row['cumulativeValue']
+                    stats[d]['tested_new'] = row['value']
+
+                for row in hospitalized['data']:
+                    d = row['date']
+
+                    if d not in stats:
+                        stats[d] = {}
+
+                    stats[d]['hospitalized'] = row['value']
+
+                for row in intensive_care['data']:
+                    d = row['date']
+
+                    if d not in stats:
+                        stats[d] = {}
+
+                    stats[d]['hospitalized_intensive_care'] = row['value']
+
+                for row in respirator['data']:
+                    d = row['date']
+
+                    if d not in stats:
+                        stats[d] = {}
+
+                    stats[d]['hospitalized_respirator'] = row['value']
+
+                return stats
             else:
+                LOG.error(response.text)
                 return {}
 
-    async def _collect_hospital_history_vg(self):
-        async with self.session.get(f'{VG_HOSPITALS_TS}?buster={randint(0, 100000)}') as response:
-            if response.status == 200:
-                data = await response.json()
-
-                hospital = {}
-
-                for h in data['hospitals']['timeseries']['total']:
-                    d = h['date']
-
-                    hospital[d] = {
-                        'hospitalized': 0,
-                        'hospitalized_critical': 0,
-                        'hospital_staff_infected': 0,
-                        'hospital_staff_quarantined': 0
-                    }
-
-                    if h['hospitalized']:
-                        hospital[d]['hospitalized'] = h['hospitalized']
-                    if h['respiratory']:
-                        hospital[d]['hospitalized_critical'] = h['respiratory']
-                    if h['infectedEmployees']:
-                        hospital[d]['hospital_staff_infected'] = h['infectedEmployees']
-                    if h['quarantineEmployees']:
-                        hospital[d]['hospital_staff_quarantined'] = h['quarantineEmployees']
-
-                return hospital
-            else:
-                return {}
-
-    async def _collect_testing_history_vg(self):
-        async with self.session.get(f'{VG_TESTED_TS}?buster={randint(0, 100000)}') as response:
-            if response.status == 200:
-                data = await response.json()
-
-                tested = {}
-
-                for ts in data['timeseries']:
-                    tested[ts['date']] = { 'tested': ts['count'] }
-
-                return tested
-            else:
-                return {}
-
-    def _populate_timeseries(self, case_history, hospital_history, test_history):
+    def _populate_timeseries(self, case_history):
         LOG.debug('Updating statistics')
 
         combined = {}
 
-        dates = sorted(list(case_history) + list(hospital_history) + list(test_history))
+        dates = sorted(list(case_history))
 
         for d in dates:
             combined[d] = {
@@ -195,21 +199,14 @@ class Collector:
                 'dead': 0,
                 'dead_new': 0,
                 'tested': 0,
+                'tested_new': 0,
                 'hospitalized': 0,
-                'hospitalized_critical': 0,
-                'hospital_staff_infected': 0,
-                'hospital_staff_quarantined': 0,
+                'hospitalized_intensive_care': 0,
+                'hospitalized_respirator': 0,
             }
 
         for k, v in case_history.items():
             combined[k].update(v)
-
-        for k, v in hospital_history.items():
-            combined[k].update(v)
-
-        for k, v in test_history.items():
-            combined[k].update(v)
-
 
         self.stats_objects = Stats.assemble(combined)
         self.stats = {

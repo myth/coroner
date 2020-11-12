@@ -46,6 +46,10 @@
           <div class="counter-value" id="counter-infected-change-percent"></div>
         </div>
         <div class="counter counter-left">
+          <div class="counter-name">Tested Today</div>
+          <div class="counter-value" id="counter-tested-today"></div>
+        </div>
+        <div class="counter counter-left">
           <div class="counter-name">Total Deaths</div>
           <div class="counter-value" id="counter-dead"></div>
         </div>
@@ -58,14 +62,6 @@
           <div class="counter-value" id="counter-mortality-rate"></div>
         </div>
         <div class="counter counter-left">
-          <div class="counter-name">Infected Doubling Rate</div>
-          <div class="counter-value" id="counter-infected-doubling-rate"></div>
-        </div>
-        <div class="counter counter-left">
-          <div class="counter-name">Infected Doubling Rate (MA3)</div>
-          <div class="counter-value" id="counter-infected-doubling-rate-ma3"></div>
-        </div>
-        <div class="counter counter-left">
           <div class="counter-name">Tested</div>
           <div class="counter-value" id="counter-tested"></div>
         </div>
@@ -76,20 +72,16 @@
           <div class="counter-value" id="counter-hospitalized"></div>
         </div>
         <div class="counter counter-right">
-          <div class="counter-name">Hospitalized (Critical)</div>
-          <div class="counter-value" id="counter-hospitalized-critical"></div>
+          <div class="counter-name">Hospitalized (Intensive Care)</div>
+          <div class="counter-value" id="counter-hospitalized-intensive-care"></div>
         </div>
         <div class="counter counter-right">
-          <div class="counter-name">Hospitalization Doubling Rate</div>
-          <div class="counter-value" id="counter-hospitalized-doubling-rate"></div>
+          <div class="counter-name">Hospitalized (Respirator)</div>
+          <div class="counter-value" id="counter-hospitalized-respirator"></div>
         </div>
         <div class="counter counter-right">
-          <div class="counter-name">Infected Hospital Staff</div>
-          <div class="counter-value" id="counter-hospital-staff-infected"></div>
-        </div>
-        <div class="counter counter-right">
-          <div class="counter-name">Quarantined Hospital Staff</div>
-          <div class="counter-value" id="counter-hospital-staff-quarantined"></div>
+          <div class="counter-name">Test Hit Ratio</div>
+          <div class="counter-value" id="counter-tested-hit-ratio"></div>
         </div>
         <div class="counter counter-right">
           <div class="counter-name">Population Infected</div>
@@ -100,56 +92,41 @@
           <div class="counter-value" id="counter-tested-in-population"></div>
         </div>
         <div class="counter counter-right">
-          <div class="counter-name">Test Hit Ratio</div>
-          <div class="counter-value" id="counter-tested-hit-ratio"></div>
-        </div>
-        <div class="counter counter-right">
           <div class="counter-name">Population</div>
           <div class="counter-value" id="counter-population"></div>
         </div>
       </div>
     </div>
+
     <div class="flex">
-      <canvas id="infectedToday" width="800" height="300"></canvas>
+      <canvas id="infectedToday"></canvas>
     </div>
     <div class="flex">
-      <canvas id="infected" width="800" height="300"></canvas>
+      <canvas id="deadToday"></canvas>
     </div>
     <div class="flex">
-      <canvas id="deadToday" width="800" height="300"></canvas>
+      <canvas id="hospitalized"></canvas>
     </div>
     <div class="flex">
-      <canvas id="dead" width="800" height="300"></canvas>
+      <canvas id="tested"></canvas>
     </div>
     <div class="flex">
-      <canvas id="hospitalized" width="800" height="300"></canvas>
+      <canvas id="infected"></canvas>
     </div>
     <div class="flex">
-      <canvas id="tested" width="800" height="300"></canvas>
+      <canvas id="dead"></canvas>
     </div>
     <h2>Growth Metrics</h2>
     <div class="flex">
-      <canvas id="infectedMA" width="800" height="300"></canvas>
+      <canvas id="infectedMA"></canvas>
     </div>
     <div class="flex">
-      <canvas id="infectedDoublingRate" width="800" height="300"></canvas>
+      <canvas id="testedHitRatioPercent"></canvas>
     </div>
     <div class="flex">
-      <canvas id="infectedChange" width="800" height="300"></canvas>
+      <canvas id="hospitalizedChange"></canvas>
     </div>
-    <div class="flex">
-      <canvas id="testedChange" width="800" height="300"></canvas>
-    </div>
-    <div class="flex">
-      <canvas id="testedHitRatioPercent" width="800" height="300"></canvas>
-    </div>
-    <div class="flex">
-      <canvas id="hospitalizedChange" width="800" height="300"></canvas>
-    </div>
-    <div class="flex">
-      <canvas id="hospitalizedMA" width="800" height="300"></canvas>
-    </div>
-
+  
     <div class="flex">
       <div id="logo">
         <img alt="Coronavirus (COVID-19)" title="Coronavirus (COVID-19)" src="/static/coronavirus.png" />

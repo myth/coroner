@@ -55,9 +55,8 @@ def update_from_data(current: Stats, previous: Stats, data: Dict[str, Any]):
     current.dead_today = data['dead_new']
     current.tested = get_biggest_valid('tested')
     current.hospitalized = get_valid('hospitalized')
-    current.hospitalized_critical = get_valid('hospitalized_critical')
-    current.hospital_staff_infected = get_valid('hospital_staff_infected')
-    current.hospital_staff_quarantined = get_valid('hospital_staff_quarantined')
+    current.hospitalized_intensive_care = get_valid('hospitalized_intensive_care')
+    current.hospitalized_respirator = get_valid('hospitalized_respirator')
 
 
 def calculate_changes(current: Stats, previous: Stats):
@@ -67,12 +66,10 @@ def calculate_changes(current: Stats, previous: Stats):
     current.tested_yesterday = previous.tested_today
     current.hospitalized_today = current.hospitalized - previous.hospitalized
     current.hospitalized_yesterday = previous.hospitalized_today
-    current.hospitalized_critical_today = current.hospitalized_critical - previous.hospitalized_critical
-    current.hospitalized_critical_yesterday = previous.hospitalized_critical_today
-    current.hospital_staff_infected_today = current.hospital_staff_infected - previous.hospital_staff_infected
-    current.hospital_staff_infected_yesterday = previous.hospital_staff_infected_today
-    current.hospital_staff_quarantined_today = current.hospital_staff_quarantined - previous.hospital_staff_quarantined
-    current.hospital_staff_quarantined_yesterday = previous.hospital_staff_quarantined_today
+    current.hospitalized_intensive_care_today = current.hospitalized_intensive_care - previous.hospitalized_intensive_care
+    current.hospitalized_intensive_care_yesterday = previous.hospitalized_intensive_care_today
+    current.hospitalized_respirator_today = current.hospitalized_respirator - previous.hospitalized_respirator
+    current.hospitalized_respirator_yesterday = previous.hospitalized_respirator_today
 
 
 def calculate_moving_average(stats: List[Stats], field: str, window: int):
@@ -95,64 +92,16 @@ def calculate_moving_average(stats: List[Stats], field: str, window: int):
 def calculate_moving_averages(stats: List[Stats]):
     LOG.debug('Calculating moving averages')
 
-    windows = [3, 5]
+    windows = [3, 7]
     fields = [
         'infected_today',
         'dead_today',
         'tested_today',
-        'hospitalized_today',
-        'hospitalized_critical_today',
-        'hospital_staff_infected_today',
-        'hospital_staff_quarantined_today'
     ]
 
     for w in windows:
         for f in fields:
             calculate_moving_average(stats, f, w)
-
-
-def calculate_doubling_rate(stats: List[Stats], field: str, mov_avg_3: bool = False):
-    for i in range(1, len(stats)):
-        current = stats[i]
-        previous = stats[i-1]
-
-        ensure_field(current, field)
-        ensure_field(previous, field)
-
-        current_val = getattr(current, field)
-
-        if mov_avg_3:
-            ma_field = f'{field}_today_mov_avg_3'
-            ensure_field(current, ma_field)
-            previous_val = current_val - getattr(current, ma_field)
-        else:
-            previous_val = getattr(previous, field)
-
-        dr = doubling_rate(current_val, previous_val)
-
-        if mov_avg_3:
-            dr_field = f'{field}_doubling_rate_from_mov_avg_3'
-        else:
-            dr_field = f'{field}_doubling_rate'
-
-        ensure_field(current, dr_field)
-
-        setattr(current, dr_field, dr)
-
-
-def calculate_doubling_rates(stats: List[Stats]):
-    LOG.debug('Calculating doubling rates')
-
-    fields = [
-        'infected',
-        'hospitalized',
-        'hospital_staff_infected'
-    ]
-
-    for f in fields:
-        calculate_doubling_rate(stats, f)
-
-    calculate_doubling_rate(stats, 'infected', mov_avg_3=True)
 
 
 def project_curve(stats: List[Stats],
@@ -169,7 +118,7 @@ def project_curve(stats: List[Stats],
     :param field: Which attribute on the Stats object to read.
     :param projection_length: How many days into the future to project the curve.
     :param can_decline: Whether or not the curve is allowed to go back down (i.e not allowed for total infections).
-    :param exp_error_bounds: Whether or not exponential or constant error percentage should be used to calculate upper/lower bounds.
+    :param exp_error_bounds: Calculate upper/lower bounds using compounded increase.
     """
     curve = []
 
@@ -229,7 +178,6 @@ def project_curve(stats: List[Stats],
             if lower_bound[i] < lower_bound[i-1]:
                 lower_bound[i] = lower_bound[i-1]
 
-
     # Apply a cutoff if any of the curves reaches below 0
     for i in range(len(curve)):
         if curve[i] < 0:
@@ -251,7 +199,6 @@ def project_curves(stats: List[Stats]):
     fields = [
         'infected',
         'hospitalized',
-        'hospital_staff_infected',
     ]
 
     # Only start from the point where we have at least "history" number of historical stats objects
@@ -311,9 +258,6 @@ class ProjectionStats:
             'hospitalized': self.hospitalized,
             'hospitalized_lower': self.hospitalized_lower,
             'hospitalized_upper': self.hospitalized_upper,
-            'hospital_staff_infected': self.hospital_staff_infected,
-            'hospital_staff_infected_lower': self.hospital_staff_infected_lower,
-            'hospital_staff_infected_upper': self.hospital_staff_infected_upper
         }
 
 
@@ -324,48 +268,32 @@ class Stats:
         self.infected = 0
         self.infected_today = 0
         self.infected_yesterday = 0
-        self.infected_doubling_rate = 0
-        self.infected_doubling_rate_from_mov_avg_3 = 0
         self.infected_today_mov_avg_3 = 0
-        self.infected_today_mov_avg_5 = 0
+        self.infected_today_mov_avg_7 = 0
 
         self.dead = 0
         self.dead_today = 0
         self.dead_yesterday = 0
         self.dead_today_mov_avg_3 = 0
-        self.dead_today_mov_avg_5 = 0
+        self.dead_today_mov_avg_7 = 0
 
         self.tested = 0
         self.tested_today = 0
         self.tested_yesterday = 0
         self.tested_today_mov_avg_3 = 0
-        self.tested_today_mov_avg_5 = 0
+        self.tested_today_mov_avg_7 = 0
 
         self.hospitalized = 0
         self.hospitalized_today = 0
         self.hospitalized_yesterday = 0
-        self.hospitalized_doubling_rate = 0
-        self.hospitalized_today_mov_avg_3 = 0
-        self.hospitalized_today_mov_avg_5 = 0
 
-        self.hospitalized_critical = 0
-        self.hospitalized_critical_today = 0
-        self.hospitalized_critical_yesterday = 0
-        self.hospitalized_critical_today_mov_avg_3 = 0
-        self.hospitalized_critical_today_mov_avg_5 = 0
+        self.hospitalized_intensive_care = 0
+        self.hospitalized_intensive_care_today = 0
+        self.hospitalized_intensive_care_yesterday = 0
 
-        self.hospital_staff_infected = 0
-        self.hospital_staff_infected_today = 0
-        self.hospital_staff_infected_yesterday = 0
-        self.hospital_staff_infected_doubling_rate = 0
-        self.hospital_staff_infected_today_mov_avg_3 = 0
-        self.hospital_staff_infected_today_mov_avg_5 = 0
-
-        self.hospital_staff_quarantined = 0
-        self.hospital_staff_quarantined_today = 0
-        self.hospital_staff_quarantined_yesterday = 0
-        self.hospital_staff_quarantined_today_mov_avg_3 = 0
-        self.hospital_staff_quarantined_today_mov_avg_5 = 0
+        self.hospitalized_respirator = 0
+        self.hospitalized_respirator_today = 0
+        self.hospitalized_respirator_yesterday = 0
 
         self.projections: List[ProjectionStats] = []
 
@@ -416,10 +344,10 @@ class Stats:
 
     @property
     def tested_hit_ratio_percent(self):
-        if self.tested == 0:
+        if self.tested_today == 0:
             return 0
 
-        return round(self.infected / self.tested * 100, 2)
+        return round(self.infected_today / self.tested_today * 100, 2)
 
     @property
     def hospitalized_change_percent(self):
@@ -437,48 +365,39 @@ class Stats:
         )
 
     @property
-    def hospitalized_critical_change_percent(self):
-        return percent_change(self.hospitalized_critical, self.hospitalized_critical - self.hospitalized_critical_today)
-
-    @property
-    def hospitalized_critical_daily_diff(self):
-        return self.hospitalized_critical_today - self.hospitalized_critical_yesterday
-
-    @property
-    def hospitalized_critical_daily_diff_percent(self):
+    def hospitalized_intensive_care_change_percent(self):
         return percent_change(
-            self.hospitalized_critical_today,
-            self.hospitalized_critical_yesterday
+            self.hospitalized_intensive_care,
+            self.hospitalized_intensive_care - self.hospitalized_intensive_care_today
         )
 
     @property
-    def hospital_staff_infected_change_percent(self):
-        return percent_change(self.hospital_staff_infected, self.hospital_staff_infected - self.hospital_staff_infected_today)
+    def hospitalized_intensive_care_daily_diff(self):
+        return self.hospitalized_intensive_care_today - self.hospitalized_intensive_care_yesterday
 
     @property
-    def hospital_staff_infected_daily_diff(self):
-        return self.hospital_staff_infected_today - self.hospital_staff_infected_yesterday
-
-    @property
-    def hospital_staff_infected_daily_diff_percent(self):
+    def hospitalized_intensive_care_daily_diff_percent(self):
         return percent_change(
-            self.hospital_staff_infected_today,
-            self.hospital_staff_infected_yesterday
+            self.hospitalized_intensive_care_today,
+            self.hospitalized_intensive_care_yesterday
         )
 
     @property
-    def hospital_staff_quarantined_change_percent(self):
-        return percent_change(self.hospital_staff_quarantined, self.hospital_staff_quarantined - self.hospital_staff_quarantined_today)
-
-    @property
-    def hospital_staff_quarantined_daily_diff(self):
-        return self.hospital_staff_quarantined_today - self.hospital_staff_quarantined_yesterday
-
-    @property
-    def hospital_staff_quarantined_daily_diff_percent(self):
+    def hospitalized_respirator_change_percent(self):
         return percent_change(
-            self.hospital_staff_quarantined_today,
-            self.hospital_staff_quarantined_yesterday
+            self.hospitalized_respirator,
+            self.hospitalized_respirator - self.hospitalized_respirator_today
+        )
+
+    @property
+    def hospitalized_respirator_daily_diff(self):
+        return self.hospitalized_respirator_today - self.hospitalized_respirator_yesterday
+
+    @property
+    def hospitalized_respirator_daily_diff_percent(self):
+        return percent_change(
+            self.hospitalized_respirator_today,
+            self.hospitalized_respirator_yesterday
         )
 
     @property
@@ -500,13 +419,11 @@ class Stats:
                 'total': self.infected,
                 'today': self.infected_today,
                 'yesterday': self.infected_yesterday,
-                'doubling_rate': self.infected_doubling_rate,
-                'doubling_rate_from_mov_avg_3': self.infected_doubling_rate_from_mov_avg_3,
                 'change_percent': self.infected_change_percent,
                 'daily_diff': self.infected_daily_diff,
                 'daily_diff_percent': self.infected_daily_diff_percent,
                 'today_mov_avg_3': self.infected_today_mov_avg_3,
-                'today_mov_avg_5': self.infected_today_mov_avg_5,
+                'today_mov_avg_7': self.infected_today_mov_avg_7,
             },
             'dead': {
                 'total': self.dead,
@@ -516,7 +433,7 @@ class Stats:
                 'daily_diff': self.dead_daily_diff,
                 'daily_diff_percent': self.dead_daily_diff_percent,
                 'today_mov_avg_3': self.dead_today_mov_avg_3,
-                'today_mov_avg_5': self.dead_today_mov_avg_5,
+                'today_mov_avg_7': self.dead_today_mov_avg_7,
                 'mortality_percent': self.mortality_percent,
             },
             'tested': {
@@ -528,52 +445,32 @@ class Stats:
                 'daily_diff_percent': self.tested_daily_diff_percent,
                 'hit_ratio_percent': self.tested_hit_ratio_percent,
                 'today_mov_avg_3': self.tested_today_mov_avg_3,
-                'today_mov_avg_5': self.tested_today_mov_avg_5,
+                'today_mov_avg_7': self.tested_today_mov_avg_7,
             },
             'hospitalized': {
-                'general': {
+                'all': {
                     'total': self.hospitalized,
                     'today': self.hospitalized_today,
                     'yesterday': self.hospitalized_yesterday,
-                    'doubling_rate': self.hospitalized_doubling_rate,
                     'change_percent': self.hospitalized_change_percent,
                     'daily_diff': self.hospitalized_daily_diff,
                     'daily_diff_percent': self.hospitalized_daily_diff_percent,
-                    'today_mov_avg_3': self.hospitalized_today_mov_avg_3,
-                    'today_mov_avg_5': self.hospitalized_today_mov_avg_5,
                 },
-                'critical': {
-                    'total': self.hospitalized_critical,
-                    'today': self.hospitalized_critical_today,
-                    'yesterday': self.hospitalized_critical_yesterday,
-                    'change_percent': self.hospitalized_critical_change_percent,
-                    'daily_diff': self.hospitalized_critical_daily_diff,
-                    'daily_diff_percent': self.hospitalized_critical_daily_diff_percent,
-                    'today_mov_avg_3': self.hospitalized_critical_today_mov_avg_3,
-                    'today_mov_avg_5': self.hospitalized_critical_today_mov_avg_5,
-                }
-            },
-            'hospital_staff': {
-                'infected': {
-                    'total': self.hospital_staff_infected,
-                    'today': self.hospital_staff_infected_today,
-                    'yesterday': self.hospital_staff_infected_yesterday,
-                    'doubling_rate': self.hospital_staff_infected_doubling_rate,
-                    'change_percent': self.hospital_staff_infected_change_percent,
-                    'daily_diff': self.hospital_staff_infected_daily_diff,
-                    'daily_diff_percent': self.hospital_staff_infected_daily_diff_percent,
-                    'today_mov_avg_3': self.hospital_staff_infected_today_mov_avg_3,
-                    'today_mov_avg_5': self.hospital_staff_infected_today_mov_avg_5,
+                'intensive_care': {
+                    'total': self.hospitalized_intensive_care,
+                    'today': self.hospitalized_intensive_care_today,
+                    'yesterday': self.hospitalized_intensive_care_yesterday,
+                    'change_percent': self.hospitalized_intensive_care_change_percent,
+                    'daily_diff': self.hospitalized_intensive_care_daily_diff,
+                    'daily_diff_percent': self.hospitalized_intensive_care_daily_diff_percent,
                 },
-                'quarantined': {
-                    'total': self.hospital_staff_quarantined,
-                    'today': self.hospital_staff_quarantined_today,
-                    'yesterday': self.hospital_staff_quarantined_yesterday,
-                    'change_percent': self.hospital_staff_quarantined_change_percent,
-                    'daily_diff': self.hospital_staff_quarantined_daily_diff,
-                    'daily_diff_percent': self.hospital_staff_quarantined_daily_diff_percent,
-                    'today_mov_avg_3': self.hospital_staff_quarantined_today_mov_avg_3,
-                    'today_mov_avg_5': self.hospital_staff_quarantined_today_mov_avg_5,
+                'respirator': {
+                    'total': self.hospitalized_respirator,
+                    'today': self.hospitalized_respirator_today,
+                    'yesterday': self.hospitalized_respirator_yesterday,
+                    'change_percent': self.hospitalized_respirator_change_percent,
+                    'daily_diff': self.hospitalized_respirator_daily_diff,
+                    'daily_diff_percent': self.hospitalized_respirator_daily_diff_percent,
                 }
             },
             'population': {
@@ -616,7 +513,6 @@ class Stats:
             calculate_changes(stats[i], stats[i-1])
 
         calculate_moving_averages(stats)
-        calculate_doubling_rates(stats)
         # project_curves(stats)
 
         return stats

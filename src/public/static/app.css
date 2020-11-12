@@ -53,6 +53,11 @@ p.description {
   display: flex;
   justify-content: center;
 }
+.flex > canvas {
+  width: 100%;
+  max-width: 1024px;
+  max-height: 300px;
+}
 .flex-row {
   display: flex;
   flex-direction: column;

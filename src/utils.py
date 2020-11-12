@@ -18,6 +18,7 @@ def pairwise(iterable):
 
     return zip(a, b)
 
+
 def ensure_field(obj: Any, field: str):
     if not hasattr(obj, field):
         raise ValueError(f'Object {obj} did not have attribute "{field}"')
@@ -40,6 +41,7 @@ def get_today_local():
 
 def get_now_local():
     return UTC.localize(datetime.utcnow()).astimezone(NLT)
+
 
 def create_date_range(start: date, end: date):
     dates = [start]

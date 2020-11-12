@@ -16,8 +16,8 @@ const YELLOW_BORDER = 'rgba(209, 182, 29, 1.0)'
 const PURPLE_BORDER = 'rgba(136, 26, 209, 1.0)'
 
 const OPTIONS = {
-    responsive: false,
     animation: false,
+    maintainAspectRatio: false,
     scales: {
         xAxes: [{
             ticks: {
@@ -106,6 +106,10 @@ const initChart = (opts, datasets, labels) => {
         globalOpts.scales.yAxes[0].afterBuildTicks = logTickBuilder
         globalOpts.scales.yAxes[0].ticks.callback = logTickMapper
     }
+    if (opts.stacked) {
+        globalOpts.scales.xAxes[0].stacked = true
+        globalOpts.scales.yAxes[0].stacked = true
+    }
 
     if (opts.labelX) {
         globalOpts.scales.xAxes[0].scaleLabel = {
@@ -144,7 +148,7 @@ const initChart = (opts, datasets, labels) => {
             labels: labels,
             datasets: datasets
         },
-        options: globalOpts
+        options: globalOpts,
     })
 }
 
@@ -155,18 +159,15 @@ const updateCounters = c => {
     setElementContent('counter-dead', c['dead']['total'])
     setElementContent('counter-dead-today', c['dead']['today'])
     setElementContent('counter-tested', c['tested']['total'])
+    setElementContent('counter-tested-today', c['tested']['today'])
     setElementContent('counter-population', c['population']['total'])
-    setElementContent('counter-hospitalized', c['hospitalized']['general']['total'])
-    setElementContent('counter-hospitalized-doubling-rate', `${c['hospitalized']['general']['doubling_rate']} days`)
-    setElementContent('counter-hospitalized-critical', c['hospitalized']['critical']['total'])
-    setElementContent('counter-hospital-staff-infected', c['hospital_staff']['infected']['total'])
-    setElementContent('counter-hospital-staff-quarantined', c['hospital_staff']['quarantined']['total'])
+    setElementContent('counter-hospitalized', c['hospitalized']['all']['total'])
+    setElementContent('counter-hospitalized-intensive-care', c['hospitalized']['intensive_care']['total'])
+    setElementContent('counter-hospitalized-respirator', c['hospitalized']['respirator']['total'])
     setElementContent('counter-cases-in-population', `${c['population']['infected_percent']} %`)
     setElementContent('counter-tested-in-population', `${c['population']['tested_percent']} %`)
     setElementContent('counter-mortality-rate', `${c['dead']['mortality_percent']} %`)
     setElementContent('counter-tested-hit-ratio', `${c['tested']['hit_ratio_percent']} %`)
-    setElementContent('counter-infected-doubling-rate', `${c['infected']['doubling_rate']} days`)
-    setElementContent('counter-infected-doubling-rate-ma3', `${c['infected']['doubling_rate_from_mov_avg_3']} days`)
 }
 
 const bindDatePicker = (data, charts) => {
@@ -232,7 +233,8 @@ const createChart = (originalData, opts) => {
             title: opts.title,
             type: opts.type,
             logX: opts.logX,
-            logY: opts.logY
+            logY: opts.logY,
+            stacked: opts.stacked
         },
         opts.datasets.map(d => {
             return {
@@ -319,18 +321,26 @@ const createAllCharts = data => {
         {
             element: 'hospitalized',
             title: 'Hospitalized',
-            filter: d => d['hospitalized']['general']['total'] > 0,
-            datasets: [{
-                label: 'Critical',
-                valueGetter: d => d['hospitalized']['critical']['total'],
-                borderColor: ORANGE_BORDER,
-                backgroundColor: ORANGE,
+            filter: d => d['hospitalized']['all']['total'] > 0,
+            stacked: true,
+            datasets: [
+            {
+                label: 'Stable',
+                valueGetter: d => Math.abs(d['hospitalized']['all']['total'] - d['hospitalized']['intensive_care']['total']),
+                borderColor: PURPLE_BORDER,
+                backgroundColor: PURPLE,
             },
             {
-                label: 'Total',
-                valueGetter: d => d['hospitalized']['general']['total'],
-                borderColor: PURPLE_BORDER,
-                backgroundColor: PURPLE_BORDER,
+                label: 'Intensive Care',
+                valueGetter: d => Math.abs(d['hospitalized']['intensive_care']['total'] - d['hospitalized']['respirator']['total']),
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
+            },
+            {
+                label: 'Respirator',
+                valueGetter: d => d['hospitalized']['respirator']['total'],
+                borderColor: RED_BORDER,
+                backgroundColor: RED,
             }]
         },
     ))
@@ -341,8 +351,8 @@ const createAllCharts = data => {
             element: 'tested',
             filter: d => d['tested']['total'] > 0,
             datasets: [{
-                label: 'Tested',
-                valueGetter: d => d['tested']['total'],
+                label: 'Tested Daily',
+                valueGetter: d => d['tested']['today'],
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN,
             }]
@@ -365,64 +375,10 @@ const createAllCharts = data => {
                 backgroundColor: YELLOW,
             },
             {
-                label: '5 day window',
-                valueGetter: d => d['infected']['today_mov_avg_5'],
+                label: '7 day window',
+                valueGetter: d => d['infected']['today_mov_avg_7'],
                 borderColor: ORANGE_BORDER,
                 backgroundColor: ORANGE,
-            }]
-        }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'infectedDoublingRate',
-            title: 'Infection Doubling Rate (Last 30 days)',
-            window: 30,
-            type: 'line',
-            datasets: [{
-                label: 'Standard (days)',
-                valueGetter: d => d['infected']['doubling_rate'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            },
-            {
-                label: '3 Day Moving Average (days)',
-                valueGetter: d => d['infected']['doubling_rate_from_mov_avg_3'],
-                borderColor: RED_BORDER,
-                backgroundColor: RED,
-            }]
-        }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'infectedChange',
-            title: 'Infections Day-To-Day Change (Last 30 days)',
-            window: 30,
-            type: 'line',
-            datasets: [{
-                label: 'Daily Infected',
-                valueGetter: d => d['infected']['daily_diff'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            }]
-        }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'testedChange',
-            title: 'Testing Day-to-Day Change (Last 30 days)',
-            window: 30,
-            type: 'line',
-            datasets: [{
-                label: 'Daily Tested',
-                valueGetter: d => d['tested']['daily_diff'],
-                borderColor: GREEN_BORDER,
-                backgroundColor: GREEN,
             }]
         }
     ))
@@ -447,43 +403,26 @@ const createAllCharts = data => {
         {
             element: 'hospitalizedChange',
             title: 'Daily Hospitalizations (Last 30 days)',
-            filter: d => d['hospitalized']['general']['total'] > 0,
+            filter: d => d['hospitalized']['all']['total'] > 0,
             window: 30,
-            type: 'line',
+            stacked: true,
             datasets: [{
-                label: 'General',
-                valueGetter: d => d['hospitalized']['general']['today'],
+                label: 'All',
+                valueGetter: d => d['hospitalized']['all']['today'],
                 borderColor: PURPLE_BORDER,
                 backgroundColor: PURPLE,
             },
             {
-                label: 'Critical',
-                valueGetter: d => d['hospitalized']['critical']['today'],
-                borderColor: ORANGE_BORDER,
-                backgroundColor: ORANGE,
-            }]
-        }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'hospitalizedMA',
-            title: 'Daily Hospitalization Moving Average (Last 30 days)',
-            filter: d => d['hospitalized']['general']['total'] > 0,
-            window: 30,
-            type: 'line',
-            datasets: [{
-                label: 'General (3 day window)',
-                valueGetter: d => d['hospitalized']['general']['today_mov_avg_3'],
-                borderColor: PURPLE_BORDER,
-                backgroundColor: PURPLE,
+                label: 'Intensive Care',
+                valueGetter: d => d['hospitalized']['intensive_care']['today'],
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
             },
             {
-                label: 'Critical (3 day window)',
-                valueGetter: d => d['hospitalized']['critical']['today_mov_avg_3'],
-                borderColor: ORANGE_BORDER,
-                backgroundColor: ORANGE,
+                label: 'Respirator',
+                valueGetter: d => d['hospitalized']['respirator']['today'],
+                borderColor: RED_BORDER,
+                backgroundColor: RED,
             }]
         }
     ))
