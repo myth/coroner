@@ -56,7 +56,7 @@ def update_from_data(current: Stats, previous: Stats, data: Dict[str, Any]):
     current.tested = get_biggest_valid('tested')
     current.hospitalized = get_valid('hospitalized')
     current.hospitalized_intensive_care = get_valid('hospitalized_intensive_care')
-    current.hospitalized_respirator = get_valid('hospitalized_respirator')
+    current.hospitalized_ventilator = get_valid('hospitalized_ventilator')
 
 
 def calculate_changes(current: Stats, previous: Stats):
@@ -68,8 +68,8 @@ def calculate_changes(current: Stats, previous: Stats):
     current.hospitalized_yesterday = previous.hospitalized_today
     current.hospitalized_intensive_care_today = current.hospitalized_intensive_care - previous.hospitalized_intensive_care
     current.hospitalized_intensive_care_yesterday = previous.hospitalized_intensive_care_today
-    current.hospitalized_respirator_today = current.hospitalized_respirator - previous.hospitalized_respirator
-    current.hospitalized_respirator_yesterday = previous.hospitalized_respirator_today
+    current.hospitalized_ventilator_today = current.hospitalized_ventilator - previous.hospitalized_ventilator
+    current.hospitalized_ventilator_yesterday = previous.hospitalized_ventilator_today
 
 
 def calculate_moving_average(stats: List[Stats], field: str, window: int):
@@ -291,9 +291,9 @@ class Stats:
         self.hospitalized_intensive_care_today = 0
         self.hospitalized_intensive_care_yesterday = 0
 
-        self.hospitalized_respirator = 0
-        self.hospitalized_respirator_today = 0
-        self.hospitalized_respirator_yesterday = 0
+        self.hospitalized_ventilator = 0
+        self.hospitalized_ventilator_today = 0
+        self.hospitalized_ventilator_yesterday = 0
 
         self.projections: List[ProjectionStats] = []
 
@@ -383,21 +383,21 @@ class Stats:
         )
 
     @property
-    def hospitalized_respirator_change_percent(self):
+    def hospitalized_ventilator_change_percent(self):
         return percent_change(
-            self.hospitalized_respirator,
-            self.hospitalized_respirator - self.hospitalized_respirator_today
+            self.hospitalized_ventilator,
+            self.hospitalized_ventilator - self.hospitalized_ventilator_today
         )
 
     @property
-    def hospitalized_respirator_daily_diff(self):
-        return self.hospitalized_respirator_today - self.hospitalized_respirator_yesterday
+    def hospitalized_ventilator_daily_diff(self):
+        return self.hospitalized_ventilator_today - self.hospitalized_ventilator_yesterday
 
     @property
-    def hospitalized_respirator_daily_diff_percent(self):
+    def hospitalized_ventilator_daily_diff_percent(self):
         return percent_change(
-            self.hospitalized_respirator_today,
-            self.hospitalized_respirator_yesterday
+            self.hospitalized_ventilator_today,
+            self.hospitalized_ventilator_yesterday
         )
 
     @property
@@ -464,13 +464,13 @@ class Stats:
                     'daily_diff': self.hospitalized_intensive_care_daily_diff,
                     'daily_diff_percent': self.hospitalized_intensive_care_daily_diff_percent,
                 },
-                'respirator': {
-                    'total': self.hospitalized_respirator,
-                    'today': self.hospitalized_respirator_today,
-                    'yesterday': self.hospitalized_respirator_yesterday,
-                    'change_percent': self.hospitalized_respirator_change_percent,
-                    'daily_diff': self.hospitalized_respirator_daily_diff,
-                    'daily_diff_percent': self.hospitalized_respirator_daily_diff_percent,
+                'ventilator': {
+                    'total': self.hospitalized_ventilator,
+                    'today': self.hospitalized_ventilator_today,
+                    'yesterday': self.hospitalized_ventilator_yesterday,
+                    'change_percent': self.hospitalized_ventilator_change_percent,
+                    'daily_diff': self.hospitalized_ventilator_daily_diff,
+                    'daily_diff_percent': self.hospitalized_ventilator_daily_diff_percent,
                 }
             },
             'population': {

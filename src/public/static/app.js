@@ -163,7 +163,7 @@ const updateCounters = c => {
     setElementContent('counter-population', c['population']['total'])
     setElementContent('counter-hospitalized', c['hospitalized']['all']['total'])
     setElementContent('counter-hospitalized-intensive-care', c['hospitalized']['intensive_care']['total'])
-    setElementContent('counter-hospitalized-respirator', c['hospitalized']['respirator']['total'])
+    setElementContent('counter-hospitalized-ventilator', c['hospitalized']['ventilator']['total'])
     setElementContent('counter-cases-in-population', `${c['population']['infected_percent']} %`)
     setElementContent('counter-tested-in-population', `${c['population']['tested_percent']} %`)
     setElementContent('counter-mortality-rate', `${c['dead']['mortality_percent']} %`)
@@ -306,13 +306,13 @@ const createAllCharts = data => {
             },
             {
                 label: 'Intensive Care',
-                valueGetter: d => Math.abs(d['hospitalized']['intensive_care']['total'] - d['hospitalized']['respirator']['total']),
+                valueGetter: d => Math.abs(d['hospitalized']['intensive_care']['total'] - d['hospitalized']['ventilator']['total']),
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW,
             },
             {
-                label: 'Respirator',
-                valueGetter: d => d['hospitalized']['respirator']['total'],
+                label: 'Ventilator',
+                valueGetter: d => d['hospitalized']['ventilator']['total'],
                 borderColor: RED_BORDER,
                 backgroundColor: RED,
             }]
@@ -419,8 +419,8 @@ const createAllCharts = data => {
                 backgroundColor: YELLOW,
             },
             {
-                label: 'Respirator',
-                valueGetter: d => d['hospitalized']['respirator']['today'],
+                label: 'Ventilator',
+                valueGetter: d => d['hospitalized']['ventilator']['today'],
                 borderColor: RED_BORDER,
                 backgroundColor: RED,
             }]

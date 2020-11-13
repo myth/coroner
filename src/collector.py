@@ -118,7 +118,7 @@ class Collector:
                     trend_cases,
                     hospitalized,
                     intensive_care,
-                    respirator
+                    ventilator
                 ) = data['items']
 
                 stats = {}
@@ -172,13 +172,13 @@ class Collector:
 
                     stats[d]['hospitalized_intensive_care'] = row['value']
 
-                for row in respirator['data']:
+                for row in ventilator['data']:
                     d = row['date']
 
                     if d not in stats:
                         stats[d] = {}
 
-                    stats[d]['hospitalized_respirator'] = row['value']
+                    stats[d]['hospitalized_ventilator'] = row['value']
 
                 return stats
             else:
@@ -202,7 +202,7 @@ class Collector:
                 'tested_new': 0,
                 'hospitalized': 0,
                 'hospitalized_intensive_care': 0,
-                'hospitalized_respirator': 0,
+                'hospitalized_ventilator': 0,
             }
 
         for k, v in case_history.items():
