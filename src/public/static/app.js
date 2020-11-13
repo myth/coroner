@@ -271,8 +271,8 @@ const createAllCharts = data => {
             datasets: [{
                 label: 'Daily Infected',
                 valueGetter: d => d['infected']['today'],
-                borderColor: BLUE_BORDER,
-                backgroundColor: BLUE,
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE,
             }]
         },
     ))
