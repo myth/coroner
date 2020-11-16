@@ -10,54 +10,50 @@ from ctrl import Controller
 
 LOG = getLogger(__name__)
 
-basicConfig(
-    level=DEBUG,
-    format='%(asctime)s.%(msecs)03d %(levelname)s %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+basicConfig(level=DEBUG, format="%(asctime)s.%(msecs)03d %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
 
 class Coroner:
     def __init__(self):
         self.app = Application()
-        self.app['ws'] = WeakSet()
+        self.app["ws"] = WeakSet()
         self.ctrl = Controller()
 
-        LOG.debug('Setting up routes')
+        LOG.debug("Setting up routes")
 
         self.app.add_routes(self.ctrl.routes)
-        self.app.router.add_static('/static/', path=join(dirname(abspath(__file__)), 'public/static/'), name='static')
+        self.app.router.add_static("/static/", path=join(dirname(abspath(__file__)), "public/static/"), name="static")
         self.app.on_startup.append(self.on_startup)
         self.app.cleanup_ctx.append(self.ctrl.collector.persistent_session)
         self.app.on_shutdown.append(self.on_shutdown)
 
-        LOG.debug('Coroner initialized')
+        LOG.debug("Coroner initialized")
 
     def run(self):
-        LOG.info('Starting Coroner')
+        LOG.info("Starting Coroner")
 
-        run_app(self.app, host='0.0.0.0')
+        run_app(self.app, host="0.0.0.0")
 
     async def on_startup(self, app):
-        LOG.info('Starting periodic tasks')
+        LOG.info("Starting periodic tasks")
 
         self.ctrl.collector.start()
 
     async def on_shutdown(self, app):
-        LOG.info('Coroner shutting down')
+        LOG.info("Coroner shutting down")
 
-        LOG.debug('Shutting down Collector')
+        LOG.debug("Shutting down Collector")
         await self.ctrl.collector.stop()
-        LOG.debug('Collector session stopped')
+        LOG.debug("Collector session stopped")
 
-        LOG.debug('Closing websocket connections')
-        for ws in set(app['ws']):
-            await ws.close(code=WSCloseCode.GOING_AWAY, message='Server shutdown')
-        LOG.debug('Websocket connections closed')
+        LOG.debug("Closing websocket connections")
+        for ws in set(app["ws"]):
+            await ws.close(code=WSCloseCode.GOING_AWAY, message="Server shutdown")
+        LOG.debug("Websocket connections closed")
 
-        LOG.info('Coroner stopped')
+        LOG.info("Coroner stopped")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     coroner = Coroner()
     coroner.run()
