@@ -1,5 +1,6 @@
 // Chart config
 Chart.defaults.global.elements.line.borderWidth = 1
+Chart.defaults.global.defaultFontColor = '#9f9f9f';
 
 const ORANGE = 'rgba(201, 78, 21, 0.7)'
 const RED = 'rgba(209, 29, 29, 0.7)'
@@ -35,7 +36,7 @@ const OPTIONS = {
             },
             ticks: {
                 autoSkip: true,
-                maxTicksLimit: 10
+                maxTicksLimit: 10,
             }
         }]
     }
