@@ -375,7 +375,7 @@ class Stats:
         return self.hospitalized_ventilator_today - self.hospitalized_ventilator_yesterday
 
     @property
-    def hospitalized_respirator_daily_diff_percent(self):
+    def hospitalized_ventilator_daily_diff_percent(self):
         return percent_change(self.hospitalized_ventilator_today, self.hospitalized_ventilator_yesterday)
 
     @property

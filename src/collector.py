@@ -113,8 +113,8 @@ class Collector:
                     deaths,
                     cases,
                     tested,
-                    positive_share,
-                    trend_cases,
+                    _,
+                    _,
                     hospitalized,
                     intensive_care,
                     ventilator
@@ -171,7 +171,7 @@ class Collector:
 
                     stats[d]["hospitalized_intensive_care"] = row["value"]
 
-                for row in respirator["data"]:
+                for row in ventilator["data"]:
                     d = row["date"]
 
                     if d not in stats:
