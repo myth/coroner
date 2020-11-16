@@ -109,9 +109,16 @@ class Collector:
             if response.status == 200:
                 data = await response.json()
 
-                (deaths, cases, tested, positive_share, trend_cases, hospitalized, intensive_care, respirator) = data[
-                    "items"
-                ]
+                (
+                    deaths,
+                    cases,
+                    tested,
+                    positive_share,
+                    trend_cases,
+                    hospitalized,
+                    intensive_care,
+                    ventilator
+                ) = data["items"]
 
                 stats = {}
 
@@ -170,7 +177,7 @@ class Collector:
                     if d not in stats:
                         stats[d] = {}
 
-                    stats[d]["hospitalized_respirator"] = row["value"]
+                    stats[d]["hospitalized_ventilator"] = row["value"]
 
                 return stats
             else:
@@ -194,7 +201,7 @@ class Collector:
                 "tested_new": 0,
                 "hospitalized": 0,
                 "hospitalized_intensive_care": 0,
-                "hospitalized_respirator": 0,
+                "hospitalized_ventilator": 0,
             }
 
         for k, v in case_history.items():
