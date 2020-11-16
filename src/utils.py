@@ -7,8 +7,8 @@ from typing import Any, Union
 from pytz import timezone
 
 LOG = getLogger(__name__)
-UTC = timezone('UTC')
-NLT = timezone('Europe/Oslo')
+UTC = timezone("UTC")
+NLT = timezone("Europe/Oslo")
 
 
 def pairwise(iterable):
