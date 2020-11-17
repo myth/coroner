@@ -408,7 +408,7 @@ const createAllCharts = data => {
             window: 30,
             stacked: true,
             datasets: [{
-                label: 'All',
+                label: 'Stable',
                 valueGetter: d => d['hospitalized']['all']['today'],
                 borderColor: PURPLE_BORDER,
                 backgroundColor: PURPLE,
