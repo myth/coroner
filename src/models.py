@@ -93,6 +93,7 @@ def calculate_moving_averages(stats: List[Stats]):
         "infected_today",
         "dead_today",
         "tested_today",
+        "tested_hit_ratio_percent"
     ]
 
     for w in windows:
@@ -196,7 +197,6 @@ def project_curves(stats: List[Stats]):
 
     fields = [
         "infected",
-        "hospitalized",
     ]
 
     # Only start from the point where we have at least "history" number of historical stats objects
@@ -239,23 +239,12 @@ class ProjectionStats:
         self.infected_lower = 0
         self.infected_upper = 0
 
-        self.hospitalized = 0
-        self.hospitalized_lower = 0
-        self.hospitalized_upper = 0
-
-        self.hospital_staff_infected = 0
-        self.hospital_staff_infected_lower = 0
-        self.hospital_staff_infected_upper = 0
-
     def json(self) -> Dict[str, Union[int, float]]:
         return {
             "date": self.date.isoformat(),
             "infected": self.infected,
             "infected_lower": self.infected_lower,
             "infected_upper": self.infected_upper,
-            "hospitalized": self.hospitalized,
-            "hospitalized_lower": self.hospitalized_lower,
-            "hospitalized_upper": self.hospitalized_upper,
         }
 
 
@@ -280,6 +269,8 @@ class Stats:
         self.tested_yesterday = 0
         self.tested_today_mov_avg_3 = 0
         self.tested_today_mov_avg_7 = 0
+        self.tested_hit_ratio_percent_mov_avg_3 = 0
+        self.tested_hit_ratio_percent_mov_avg_7 = 0
 
         self.hospitalized = 0
         self.hospitalized_today = 0
@@ -422,6 +413,8 @@ class Stats:
                 "daily_diff": self.tested_daily_diff,
                 "daily_diff_percent": self.tested_daily_diff_percent,
                 "hit_ratio_percent": self.tested_hit_ratio_percent,
+                "hit_ratio_percent_mov_avg_3": self.tested_hit_ratio_percent_mov_avg_3,
+                "hit_ratio_percent_mov_avg_7": self.tested_hit_ratio_percent_mov_avg_7,
                 "today_mov_avg_3": self.tested_today_mov_avg_3,
                 "today_mov_avg_7": self.tested_today_mov_avg_7,
             },

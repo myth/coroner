@@ -169,6 +169,7 @@ const updateCounters = c => {
     setElementContent('counter-tested-in-population', `${c['population']['tested_percent']} %`)
     setElementContent('counter-mortality-rate', `${c['dead']['mortality_percent']} %`)
     setElementContent('counter-tested-hit-ratio', `${c['tested']['hit_ratio_percent']} %`)
+    setElementContent('counter-tested-hit-ratio-mov-avg-7', `${c['tested']['hit_ratio_percent_mov_avg_7']} %`)
 }
 
 const bindDatePicker = (data, charts) => {
@@ -388,7 +389,7 @@ const createAllCharts = data => {
         data,
         {
             element: 'testedHitRatioPercent',
-            title: 'Test Hit Ratio',
+            title: 'Positive tests',
             filter: d => d['tested']['total'] > 0,
             datasets: [{
                 label: 'Hit Ratio (%)',
@@ -397,6 +398,28 @@ const createAllCharts = data => {
                 backgroundColor: GREEN,
             }]
         },
+    ))
+
+    charts.push(createChart(
+        data,
+        {
+            element: 'testedHitRatioPercentMovAvg',
+            title: 'Positive tests (Moving Average last 30 days)',
+            window: 30,
+            type: 'line',
+            datasets: [{
+                label: '3 day window (%)',
+                valueGetter: d => d['tested']['hit_ratio_percent_mov_avg_3'],
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE,
+            },
+            {
+                label: '7 day window (%)',
+                valueGetter: d => d['tested']['hit_ratio_percent_mov_avg_7'],
+                borderColor: GREEN_BORDER,
+                backgroundColor: GREEN,
+            }]
+        }
     ))
 
     charts.push(createChart(

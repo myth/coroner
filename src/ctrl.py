@@ -10,15 +10,12 @@ LOG = getLogger(__name__)
 
 class Controller:
     def __init__(self):
-        with open(join(dirname(abspath(__file__)), "public", "index.html")) as f:
-            self.index_page = f.read()
-
         self.collector = Collector()
 
         LOG.debug("Controller initialized")
 
     async def index(self, request):
-        return web.Response(text=self.index_page, content_type="text/html")
+        return web.FileResponse(join(dirname(abspath(__file__)), "public", "index.html"))
 
     async def api(self, request):
         return web.json_response(self.collector.stats)
