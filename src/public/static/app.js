@@ -335,6 +335,21 @@ const createAllCharts = data => {
         },
     ))
 
+    charts.push(createChart(
+        data,
+        {
+            element: 'testedHitRatioPercent',
+            title: 'Positive tests',
+            filter: d => d['tested']['total'] > 0,
+            datasets: [{
+                label: 'Hit Ratio (%)',
+                valueGetter: d => d['tested']['hit_ratio_percent'],
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE,
+            }]
+        },
+    ))
+
     // Growth factors
 
     charts.push(createChart(
@@ -357,21 +372,6 @@ const createAllCharts = data => {
                 backgroundColor: ORANGE,
             }]
         }
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'testedHitRatioPercent',
-            title: 'Positive tests',
-            filter: d => d['tested']['total'] > 0,
-            datasets: [{
-                label: 'Hit Ratio (%)',
-                valueGetter: d => d['tested']['hit_ratio_percent'],
-                borderColor: GREEN_BORDER,
-                backgroundColor: GREEN,
-            }]
-        },
     ))
 
     charts.push(createChart(
