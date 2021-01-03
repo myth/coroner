@@ -335,32 +335,6 @@ const createAllCharts = data => {
         },
     ))
 
-    charts.push(createChart(
-        data,
-        {
-            element: 'infected',
-            datasets: [{
-                label: 'Total Infected',
-                valueGetter: d => d['infected']['total'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            }]
-        },
-    ))
-
-    charts.push(createChart(
-        data,
-        {
-            element: 'dead',
-            datasets: [{
-                label: 'Total Deaths',
-                valueGetter: d => d['dead']['total'],
-                borderColor: RED_BORDER,
-                backgroundColor: RED,
-            }]
-        },
-    ))
-
     // Growth factors
 
     charts.push(createChart(
