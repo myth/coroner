@@ -62,8 +62,16 @@
           <div class="counter-value" id="counter-mortality-rate"></div>
         </div>
         <div class="counter counter-left">
-          <div class="counter-name">Tested</div>
-          <div class="counter-value" id="counter-tested"></div>
+          <div class="counter-name">Vaccinated (Dose 1)</div>
+          <div class="counter-value" id="counter-dose-1"></div>
+        </div>
+        <div class="counter counter-left">
+          <div class="counter-name">Vaccinated (Dose 2)</div>
+          <div class="counter-value" id="counter-dose-2"></div>
+        </div>
+        <div class="counter counter-left">
+          <div class="counter-name">Doses Today</div>
+          <div class="counter-value" id="counter-doses-today"></div>
         </div>
       </div>
       <div class="counter-group">
@@ -78,6 +86,10 @@
         <div class="counter counter-right">
           <div class="counter-name">Hospitalized (Ventilator)</div>
           <div class="counter-value" id="counter-hospitalized-ventilator"></div>
+        </div>
+        <div class="counter counter-right">
+          <div class="counter-name">Tested</div>
+          <div class="counter-value" id="counter-tested"></div>
         </div>
         <div class="counter counter-right">
           <div class="counter-name">Test Hit Ratio</div>
@@ -96,6 +108,10 @@
           <div class="counter-value" id="counter-tested-in-population"></div>
         </div>
         <div class="counter counter-right">
+          <div class="counter-name">Population Vaccinated</div>
+          <div class="counter-value" id="counter-vaccinated-in-population"></div>
+        </div>
+        <div class="counter counter-right">
           <div class="counter-name">Population</div>
           <div class="counter-value" id="counter-population"></div>
         </div>
@@ -110,6 +126,9 @@
     </div>
     <div class="flex">
       <canvas id="hospitalized"></canvas>
+    </div>
+    <div class="flex">
+      <canvas id="vaccinated"></canvas>
     </div>
     <div class="flex">
       <canvas id="tested"></canvas>

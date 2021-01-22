@@ -20,6 +20,7 @@ COLLECT_INTERVAL = 3600  # Every hour
 
 # Data sources
 VG_MAIN_STATS = "https://redutv-api.vg.no/corona/v1/areas/country/key"
+VG_VACCINATION_STATS = "https://redutv-api.vg.no/corona/v1/areas/country/vaccinations/timeseries"
 
 
 class Collector:
@@ -68,8 +69,12 @@ class Collector:
 
             try:
                 case_history = await self._collect_case_history_vg()
+                vaccine_history = await self._collect_vaccine_history_vg()
 
-                self._populate_timeseries(case_history)
+                self._populate_timeseries(
+                    case_history,
+                    vaccine_history
+                )
 
                 self.stats["status"] = "ok"
 
@@ -184,7 +189,32 @@ class Collector:
                 LOG.error(response.text)
                 return {}
 
-    def _populate_timeseries(self, case_history):
+    async def _collect_vaccine_history_vg(self):
+        async with self.session.get(f"{VG_VACCINATION_STATS}") as response:
+            if response.status == 200:
+                data = await response.json()
+                data = data["items"]
+
+                stats = {}
+
+                for row in data:
+                    d = row["date"]
+
+                    if d not in stats:
+                        stats[d] = {}
+
+                    stats[d]["vaccinated_dose_1"] = row["cumulative"]["peopleDose1"]
+                    stats[d]["vaccinated_dose_2"] = row["cumulative"].get("peopleDose2", 0)
+
+                    stats[d]["vaccinated_dose_1_new"] = row["new"]["peopleDose1"]
+                    stats[d]["vaccinated_dose_2_new"] = row["new"].get("peopleDose2", 0)
+
+                return stats
+            else:
+                LOG.error(response.text)
+                return {}
+
+    def _populate_timeseries(self, case_history, vaccine_history):
         LOG.debug("Updating statistics")
 
         combined = {}
@@ -202,9 +232,15 @@ class Collector:
                 "hospitalized": 0,
                 "hospitalized_intensive_care": 0,
                 "hospitalized_ventilator": 0,
+                "vaccinated_dose_1": 0,
+                "vaccinated_dose_2": 0,
+                "vaccinated_dose_1_new": 0,
+                "vaccinated_dose_2_new": 0
             }
 
         for k, v in case_history.items():
+            combined[k].update(v)
+        for k, v in vaccine_history.items():
             combined[k].update(v)
 
         self.stats_objects = Stats.assemble(combined)

@@ -170,6 +170,10 @@ const updateCounters = c => {
     setElementContent('counter-mortality-rate', `${c['dead']['mortality_percent']} %`)
     setElementContent('counter-tested-hit-ratio', `${c['tested']['hit_ratio_percent']} %`)
     setElementContent('counter-tested-hit-ratio-mov-avg-7', `${c['tested']['hit_ratio_percent_mov_avg_7']} %`)
+    setElementContent('counter-dose-1', c['vaccinated']['dose_1']['total'])
+    setElementContent('counter-dose-2', c['vaccinated']['dose_2']['total'])
+    setElementContent('counter-doses-today', c['vaccinated']['combined']['today'])
+    setElementContent('counter-vaccinated-in-population', `${c['population']['vaccinated_percent']} %`)
 }
 
 const bindDatePicker = (data, charts) => {
@@ -324,6 +328,29 @@ const createAllCharts = data => {
     charts.push(createChart(
         data,
         {
+            element: 'vaccinated',
+            title: 'Daily Vaccinations',
+            filter: d => d['vaccinated']['combined']['total'] > 0,
+            stacked: true,
+            datasets: [
+            {
+                label: 'Dose 1',
+                valueGetter: d => d['vaccinated']['dose_1']['today'],
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE,
+            },
+            {
+                label: 'Dose 2',
+                valueGetter: d => d['vaccinated']['dose_2']['today'],
+                borderColor: GREEN_BORDER,
+                backgroundColor: GREEN,
+            }]
+        },
+    ))
+
+    charts.push(createChart(
+        data,
+        {
             element: 'tested',
             filter: d => d['tested']['total'] > 0,
             datasets: [{
@@ -344,8 +371,8 @@ const createAllCharts = data => {
             datasets: [{
                 label: 'Hit Ratio (%)',
                 valueGetter: d => d['tested']['hit_ratio_percent'],
-                borderColor: BLUE_BORDER,
-                backgroundColor: BLUE,
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
             }]
         },
     ))
@@ -384,14 +411,14 @@ const createAllCharts = data => {
             datasets: [{
                 label: '3 day window (%)',
                 valueGetter: d => d['tested']['hit_ratio_percent_mov_avg_3'],
-                borderColor: BLUE_BORDER,
-                backgroundColor: BLUE,
+                borderColor: YELLOW_BORDER,
+                backgroundColor: YELLOW,
             },
             {
                 label: '7 day window (%)',
                 valueGetter: d => d['tested']['hit_ratio_percent_mov_avg_7'],
-                borderColor: GREEN_BORDER,
-                backgroundColor: GREEN,
+                borderColor: BLUE_BORDER,
+                backgroundColor: BLUE,
             }]
         }
     ))

@@ -51,6 +51,10 @@ def update_from_data(current: Stats, previous: Stats, data: Dict[str, Any]):
     current.hospitalized = get_valid("hospitalized")
     current.hospitalized_intensive_care = get_valid("hospitalized_intensive_care")
     current.hospitalized_ventilator = get_valid("hospitalized_ventilator")
+    current.vaccinated_dose_1 = get_biggest_valid("vaccinated_dose_1")
+    current.vaccinated_dose_1_today = data["vaccinated_dose_1_new"]
+    current.vaccinated_dose_2 = get_biggest_valid("vaccinated_dose_2")
+    current.vaccinated_dose_2_today = data["vaccinated_dose_2_new"]
 
 
 def calculate_changes(current: Stats, previous: Stats):
@@ -66,6 +70,8 @@ def calculate_changes(current: Stats, previous: Stats):
     current.hospitalized_intensive_care_yesterday = previous.hospitalized_intensive_care_today
     current.hospitalized_ventilator_today = current.hospitalized_ventilator - previous.hospitalized_ventilator
     current.hospitalized_ventilator_yesterday = previous.hospitalized_ventilator_today
+    current.vaccinated_dose_1_yesterday = previous.vaccinated_dose_1_today
+    current.vaccinated_dose_2_yesterday = previous.vaccinated_dose_2_today
 
 
 def calculate_moving_average(stats: List[Stats], field: str, window: int):
@@ -93,7 +99,8 @@ def calculate_moving_averages(stats: List[Stats]):
         "infected_today",
         "dead_today",
         "tested_today",
-        "tested_hit_ratio_percent"
+        "tested_hit_ratio_percent",
+        "vaccinated_doses_today"
     ]
 
     for w in windows:
@@ -275,14 +282,21 @@ class Stats:
         self.hospitalized = 0
         self.hospitalized_today = 0
         self.hospitalized_yesterday = 0
-
         self.hospitalized_intensive_care = 0
         self.hospitalized_intensive_care_today = 0
         self.hospitalized_intensive_care_yesterday = 0
-
         self.hospitalized_ventilator = 0
         self.hospitalized_ventilator_today = 0
         self.hospitalized_ventilator_yesterday = 0
+
+        self.vaccinated_dose_1 = 0
+        self.vaccinated_dose_1_today = 0
+        self.vaccinated_dose_1_yesterday = 0
+        self.vaccinated_dose_2 = 0
+        self.vaccinated_dose_2_today = 0
+        self.vaccinated_dose_2_yesterday = 0
+        self.vaccinated_doses_today_mov_avg_3 = 0
+        self.vaccinated_doses_today_mov_avg_7 = 0
 
         self.projections: List[ProjectionStats] = []
 
@@ -370,12 +384,24 @@ class Stats:
         return percent_change(self.hospitalized_ventilator_today, self.hospitalized_ventilator_yesterday)
 
     @property
+    def vaccinated_doses_total(self):
+        return self.vaccinated_dose_1 + self.vaccinated_dose_2
+
+    @property
+    def vaccinated_doses_today(self):
+        return self.vaccinated_dose_1_today + self.vaccinated_dose_2_today
+
+    @property
     def population_infected_percent(self):
         return round(self.infected / POPULATION * 100, 3)
 
     @property
     def population_tested_percent(self):
         return round(self.tested / POPULATION * 100, 3)
+
+    @property
+    def population_vaccinated_percent(self):
+        return round(self.vaccinated_dose_2 / POPULATION * 100, 3)
 
     @property
     def mortality_percent(self):
@@ -444,10 +470,29 @@ class Stats:
                     "daily_diff_percent": self.hospitalized_ventilator_daily_diff_percent,
                 }
             },
+            "vaccinated": {
+                "dose_1": {
+                    "total": self.vaccinated_dose_1,
+                    "today": self.vaccinated_dose_1_today,
+                    "yesterday": self.vaccinated_dose_1_yesterday,
+                },
+                "dose_2": {
+                    "total": self.vaccinated_dose_2,
+                    "today": self.vaccinated_dose_2_today,
+                    "yesterday": self.vaccinated_dose_2_yesterday,
+                },
+                "combined": {
+                    "total": self.vaccinated_doses_total,
+                    "today": self.vaccinated_doses_today,
+                    "today_mov_avg_3": self.vaccinated_doses_today_mov_avg_3,
+                    "today_mov_avg_7": self.vaccinated_doses_today_mov_avg_7,
+                }
+            },
             "population": {
                 "total": POPULATION,
                 "infected_percent": self.population_infected_percent,
                 "tested_percent": self.population_tested_percent,
+                "vaccinated_percent": self.population_vaccinated_percent,
             },
             # "projections": [p.json() for p in self.projections]
         }
