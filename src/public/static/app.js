@@ -154,30 +154,30 @@ const initChart = (opts, datasets, labels) => {
 }
 
 const updateCounters = c => {
-    setElementContent('counter-infected', c['infected']['total'])
-    setElementContent('counter-infected-today', c['infected']['today'])
-    setElementContent('counter-infected-change-percent', `${c['infected']['change_percent']} %`)
-    setElementContent('counter-dead', c['dead']['total'])
-    setElementContent('counter-dead-today', c['dead']['today'])
-    setElementContent('counter-tested', c['tested']['total'])
-    setElementContent('counter-tested-today', c['tested']['today'])
-    setElementContent('counter-population', c['population']['total'])
-    setElementContent('counter-hospitalized', c['hospitalized']['all']['total'])
-    setElementContent('counter-hospitalized-intensive-care', c['hospitalized']['intensive_care']['total'])
-    setElementContent('counter-hospitalized-ventilator', c['hospitalized']['ventilator']['total'])
-    setElementContent('counter-cases-in-population', `${c['population']['infected_percent']} %`)
-    setElementContent('counter-tested-in-population', `${c['population']['tested_percent']} %`)
-    setElementContent('counter-mortality-rate', `${c['dead']['mortality_percent']} %`)
-    setElementContent('counter-tested-hit-ratio', `${c['tested']['hit_ratio_percent']} %`)
-    setElementContent('counter-tested-hit-ratio-mov-avg-7', `${c['tested']['hit_ratio_percent_mov_avg_7']} %`)
-    setElementContent('counter-dose-1', c['vaccinated']['dose_1']['total'])
-    setElementContent('counter-dose-2', c['vaccinated']['dose_2']['total'])
-    setElementContent('counter-doses-today', c['vaccinated']['combined']['today'])
-    setElementContent('counter-vaccinated-in-population', `${c['population']['vaccinated_percent']} %`)
+    setElementContent('counter-infected', c['infected.total'])
+    setElementContent('counter-infected-today', c['infected.today'])
+    setElementContent('counter-infected-change-percent', `${c['infected.delta_percent']} %`)
+    setElementContent('counter-dead', c['dead.total'])
+    setElementContent('counter-dead-today', c['dead.today'])
+    setElementContent('counter-tested', c['tests.total'])
+    setElementContent('counter-tested-today', c['tests.today'])
+    setElementContent('counter-population', c['population.total'])
+    setElementContent('counter-hospitalized', c['hospitalized.general.total'])
+    setElementContent('counter-hospitalized-intensive-care', c['hospitalized.intensive_care.total'])
+    setElementContent('counter-hospitalized-ventilator', c['hospitalized.ventilator.total'])
+    setElementContent('counter-cases-in-population', `${c['population.infected']} %`)
+    setElementContent('counter-mortality-rate', `${c['dead.mortality_rate']} %`)
+    setElementContent('counter-tested-hit-ratio', `${c['tests.positive']} %`)
+    setElementContent('counter-tested-hit-ratio-mov-avg-7', `${c['tests.positive_avg_7']} %`)
+    setElementContent('counter-dose-1', c['vaccinated.dose_1.total'])
+    setElementContent('counter-dose-2', c['vaccinated.dose_2.total'])
+    setElementContent('counter-vaccinated-in-population', `${c['population.vaccinated']} %`)
 }
 
 const bindDatePicker = (data, charts) => {
     const slider = document.getElementById('datepicker')
+    const prev = document.getElementById('datepicker-prev')
+    const next = document.getElementById('datepicker-next')
 
     const updateDate = i => {
         setElementContent('counter-date', data[i]['date'])
@@ -185,11 +185,11 @@ const bindDatePicker = (data, charts) => {
 
     updateDate(data.length - 1)
 
-    slider.setAttribute('max', `${data.length - 1}`)
-    slider.setAttribute('value', `${data.length - 1}`)
+    slider.max = `${data.length - 1}`
+    slider.value = `${data.length - 1}`
 
-    slider.oninput = function() {
-        const i = parseInt(this.value)
+    const setDate = i => {
+        slider.value = i
 
         updateDate(i)
         updateCounters(data[i])
@@ -199,6 +199,17 @@ const bindDatePicker = (data, charts) => {
         for (let chart of charts) {
             chart.update(newData)
         }
+    }
+
+    prev.onclick = () => {
+        setDate(Math.max(0, parseInt(slider.value) - 1))
+    }
+    next.onclick = () => {
+        setDate(Math.min(data.length - 1, parseInt(slider.value) + 1))
+    }
+
+    slider.oninput = () => {
+        setDate(parseInt(slider.value))
     }
 }
 
@@ -276,7 +287,7 @@ const createAllCharts = data => {
             element: 'infectedToday',
             datasets: [{
                 label: 'Daily Infected',
-                valueGetter: d => d['infected']['today'],
+                valueGetter: d => d['infected.today'],
                 borderColor: ORANGE_BORDER,
                 backgroundColor: ORANGE,
             }]
@@ -289,7 +300,7 @@ const createAllCharts = data => {
             element: 'deadToday',
             datasets: [{
                 label: 'Daily Deaths',
-                valueGetter: d => d['dead']['today'],
+                valueGetter: d => d['dead.today'],
                 borderColor: RED_BORDER,
                 backgroundColor: RED,
             }]
@@ -301,24 +312,24 @@ const createAllCharts = data => {
         {
             element: 'hospitalized',
             title: 'Hospitalized',
-            filter: d => d['hospitalized']['all']['total'] > 0,
+            filter: d => d['hospitalized.general.total'] > 0,
             stacked: true,
             datasets: [
             {
                 label: 'Stable',
-                valueGetter: d => Math.abs(d['hospitalized']['all']['total'] - d['hospitalized']['intensive_care']['total']),
+                valueGetter: d => d['hospitalized.general.total'],
                 borderColor: PURPLE_BORDER,
                 backgroundColor: PURPLE,
             },
             {
                 label: 'Intensive Care',
-                valueGetter: d => Math.abs(d['hospitalized']['intensive_care']['total'] - d['hospitalized']['ventilator']['total']),
+                valueGetter: d => d['hospitalized.intensive_care.total'],
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW,
             },
             {
                 label: 'Ventilator',
-                valueGetter: d => d['hospitalized']['ventilator']['total'],
+                valueGetter: d => d['hospitalized.ventilator.total'],
                 borderColor: RED_BORDER,
                 backgroundColor: RED,
             }]
@@ -330,18 +341,18 @@ const createAllCharts = data => {
         {
             element: 'vaccinated',
             title: 'Daily Vaccinations',
-            filter: d => d['vaccinated']['combined']['total'] > 0,
+            filter: d => d['vaccinated.doses.total'] > 0,
             stacked: true,
             datasets: [
             {
                 label: 'Dose 1',
-                valueGetter: d => d['vaccinated']['dose_1']['today'],
+                valueGetter: d => d['vaccinated.dose_1.today'],
                 borderColor: BLUE_BORDER,
                 backgroundColor: BLUE,
             },
             {
                 label: 'Dose 2',
-                valueGetter: d => d['vaccinated']['dose_2']['today'],
+                valueGetter: d => d['vaccinated.dose_2.today'],
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN,
             }]
@@ -352,10 +363,10 @@ const createAllCharts = data => {
         data,
         {
             element: 'tested',
-            filter: d => d['tested']['total'] > 0,
+            filter: d => d['tests.total'] > 0,
             datasets: [{
-                label: 'Daily Tested',
-                valueGetter: d => d['tested']['today'],
+                label: 'Daily Tests',
+                valueGetter: d => d['tests.today'],
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN,
             }]
@@ -367,10 +378,10 @@ const createAllCharts = data => {
         {
             element: 'testedHitRatioPercent',
             title: 'Positive tests',
-            filter: d => d['tested']['total'] > 0,
+            filter: d => d['tests.total'] > 0,
             datasets: [{
-                label: 'Hit Ratio (%)',
-                valueGetter: d => d['tested']['hit_ratio_percent'],
+                label: 'Positive (%)',
+                valueGetter: d => d['tests.positive'],
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW,
             }]
@@ -388,13 +399,13 @@ const createAllCharts = data => {
             type: 'line',
             datasets: [{
                 label: '3 day window',
-                valueGetter: d => d['infected']['today_mov_avg_3'],
+                valueGetter: d => d['infected.today_avg_3'],
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW,
             },
             {
                 label: '7 day window',
-                valueGetter: d => d['infected']['today_mov_avg_7'],
+                valueGetter: d => d['infected.today_avg_7'],
                 borderColor: ORANGE_BORDER,
                 backgroundColor: ORANGE,
             }]
@@ -410,13 +421,13 @@ const createAllCharts = data => {
             type: 'line',
             datasets: [{
                 label: '3 day window (%)',
-                valueGetter: d => d['tested']['hit_ratio_percent_mov_avg_3'],
+                valueGetter: d => d['tests.positive_avg_3'],
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW,
             },
             {
                 label: '7 day window (%)',
-                valueGetter: d => d['tested']['hit_ratio_percent_mov_avg_7'],
+                valueGetter: d => d['tests.positive_avg_7'],
                 borderColor: BLUE_BORDER,
                 backgroundColor: BLUE,
             }]
@@ -428,24 +439,24 @@ const createAllCharts = data => {
         {
             element: 'hospitalizedChange',
             title: 'Daily Hospitalizations (Last 30 days)',
-            filter: d => d['hospitalized']['all']['total'] > 0,
+            filter: d => d['hospitalized.general.total'] > 0,
             window: 30,
             stacked: true,
             datasets: [{
                 label: 'Stable',
-                valueGetter: d => d['hospitalized']['all']['today'],
+                valueGetter: d => d['hospitalized.general.today'],
                 borderColor: PURPLE_BORDER,
                 backgroundColor: PURPLE,
             },
             {
                 label: 'Intensive Care',
-                valueGetter: d => d['hospitalized']['intensive_care']['today'],
+                valueGetter: d => d['hospitalized.intensive_care.today'],
                 borderColor: YELLOW_BORDER,
                 backgroundColor: YELLOW,
             },
             {
                 label: 'Ventilator',
-                valueGetter: d => d['hospitalized']['ventilator']['today'],
+                valueGetter: d => d['hospitalized.ventilator.today'],
                 borderColor: RED_BORDER,
                 backgroundColor: RED,
             }]

@@ -5,17 +5,18 @@ from logging import getLogger
 from os.path import abspath, dirname, join
 from random import randint
 from sys import stdout
+from time import time
 from traceback import print_exc
 from typing import List, Union
 
 from aiohttp import ClientSession
 
-from models import Stats
+from models import TimeSeries
 from utils import get_now_local, get_today_local
 
 LOG = getLogger(__name__)
 
-BACKUP_INTERVAL = 7200  # Every 2 hours
+BACKUP_INTERVAL = 3600 * 12
 COLLECT_INTERVAL = 3600  # Every hour
 
 # Data sources
@@ -31,7 +32,7 @@ class Collector:
         self.running = False
         self.status = "ok"
         self.stats = {}
-        self.stats_objects = []
+        self.timeseries = []
 
         LOG.debug("Collector initialized")
 
@@ -68,6 +69,7 @@ class Collector:
             LOG.info("Collecting current stats from vg.no")
 
             try:
+                start_time = time()
                 case_history = await self._collect_case_history_vg()
                 vaccine_history = await self._collect_vaccine_history_vg()
 
@@ -77,8 +79,9 @@ class Collector:
                 )
 
                 self.stats["status"] = "ok"
+                elapsed_time = time() - start_time
 
-                LOG.info("Collection of current stats from vg.no complete")
+                LOG.info(f"Collection of current stats from vg.no complete in {elapsed_time:.3f}s")
             except Exception as e:
                 LOG.error(e)
                 print_exc(file=stdout)
@@ -106,9 +109,6 @@ class Collector:
 
                 LOG.error(f"Failed to update backup file {filename}: {e}")
 
-    def timeseries(self, field):
-        return [getattr(o, field) for o in self.stats_objects]
-
     async def _collect_case_history_vg(self):
         async with self.session.get(f"{VG_MAIN_STATS}") as response:
             if response.status == 200:
@@ -117,8 +117,8 @@ class Collector:
                 (
                     deaths,
                     cases,
-                    tested,
-                    _,
+                    tests,
+                    positive,
                     _,
                     hospitalized,
                     intensive_care,
@@ -127,62 +127,25 @@ class Collector:
 
                 stats = {}
 
-                total = 0
                 for row in cases["data"]:
-                    d = row["date"]
+                    day = stats.setdefault(row["date"], {})
+                    day["infected.today"] = row["value"]
 
-                    if d not in stats:
-                        stats[d] = {}
-
-                    total += row["value"]
-
-                    stats[d]["infected"] = total
-                    stats[d]["infected_new"] = row["value"]
-
-                total = 0
                 for row in deaths["data"]:
-                    d = row["date"]
+                    day = stats.setdefault(row["date"], {})
+                    day["dead.today"] = row["value"]
 
-                    if d not in stats:
-                        stats[d] = {}
+                for a, b in zip(tests["data"], positive["data"]):
+                    day = stats.setdefault(a["date"], {})
+                    day["tests.today"] = a["value"]
+                    day["tests.positive"] = b["value"]
 
-                    total += row["value"]
-
-                    stats[d]["dead"] = total
-                    stats[d]["dead_new"] = row["value"]
-
-                for row in tested["data"]:
-                    d = row["date"]
-
-                    if d not in stats:
-                        stats[d] = {}
-
-                    stats[d]["tested"] = row["cumulativeValue"]
-                    stats[d]["tested_new"] = row["value"]
-
-                for row in hospitalized["data"]:
-                    d = row["date"]
-
-                    if d not in stats:
-                        stats[d] = {}
-
-                    stats[d]["hospitalized"] = row["value"]
-
-                for row in intensive_care["data"]:
-                    d = row["date"]
-
-                    if d not in stats:
-                        stats[d] = {}
-
-                    stats[d]["hospitalized_intensive_care"] = row["value"]
-
-                for row in ventilator["data"]:
-                    d = row["date"]
-
-                    if d not in stats:
-                        stats[d] = {}
-
-                    stats[d]["hospitalized_ventilator"] = row["value"]
+                for a, b, c in zip(hospitalized["data"], intensive_care["data"], ventilator["data"]):
+                    day = stats.setdefault(a["date"], {})
+                    # First few fields are null instead of 0 in VG API
+                    day["hospitalized.general.total"] = a["value"] if a["value"] else 0
+                    day["hospitalized.intensive_care.total"] = b["value"] if b["value"] else 0
+                    day["hospitalized.ventilator.total"] = c["value"] if c["value"] else 0
 
                 return stats
             else:
@@ -198,16 +161,12 @@ class Collector:
                 stats = {}
 
                 for row in data:
-                    d = row["date"]
-
-                    if d not in stats:
-                        stats[d] = {}
-
-                    stats[d]["vaccinated_dose_1"] = row["cumulative"]["peopleDose1"]
-                    stats[d]["vaccinated_dose_2"] = row["cumulative"].get("peopleDose2", 0)
-
-                    stats[d]["vaccinated_dose_1_new"] = row["new"]["peopleDose1"]
-                    stats[d]["vaccinated_dose_2_new"] = row["new"].get("peopleDose2", 0)
+                    day = stats.setdefault(row["date"], {})
+                    d1 = row["new"]["peopleDose1"]
+                    d2 = row["new"].get("peopleDose2", 0)
+                    day["vaccinated.doses.today"] = d1 + d2
+                    day["vaccinated.dose_1.today"] = d1
+                    day["vaccinated.dose_2.today"] = d2
 
                 return stats
             else:
@@ -216,39 +175,24 @@ class Collector:
 
     def _populate_timeseries(self, case_history, vaccine_history):
         LOG.debug("Updating statistics")
+        start_time = time()
 
         combined = {}
 
-        dates = sorted(list(case_history))
-
-        for d in dates:
-            combined[d] = {
-                "infected": 0,
-                "infected_new": 0,
-                "dead": 0,
-                "dead_new": 0,
-                "tested": 0,
-                "tested_new": 0,
-                "hospitalized": 0,
-                "hospitalized_intensive_care": 0,
-                "hospitalized_ventilator": 0,
-                "vaccinated_dose_1": 0,
-                "vaccinated_dose_2": 0,
-                "vaccinated_dose_1_new": 0,
-                "vaccinated_dose_2_new": 0
-            }
-
         for k, v in case_history.items():
-            combined[k].update(v)
+            combined.setdefault(k, {}).update(v)
         for k, v in vaccine_history.items():
-            combined[k].update(v)
+            combined.setdefault(k, {}).update(v)
 
-        self.stats_objects = Stats.assemble(combined)
+        self.timeseries = TimeSeries(combined)
         self.stats = {
             "status": self.status,
             "updated": get_now_local().isoformat(),
-            "current": self.stats_objects[-1].json(),
-            "history": [s.json() for s in self.stats_objects],
+            "current": self.timeseries.data[-1],
+            "history": self.timeseries.data,
         }
+        self.json = dumps(self.stats)
 
-        LOG.debug("Statistics updated")
+        elapsed_time = time() - start_time
+
+        LOG.debug(f"Statistics updated in {elapsed_time:.3f}s")

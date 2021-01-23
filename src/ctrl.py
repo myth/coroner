@@ -18,23 +18,8 @@ class Controller:
         return web.FileResponse(join(dirname(abspath(__file__)), "public", "index.html"))
 
     async def api(self, request):
-        return web.json_response(self.collector.stats)
-
-    async def websocket(self, request):
-        ws = web.WebSocketResponse()
-
-        await ws.prepare(request)
-
-        request.app["ws"].add(ws)
-
-        try:
-            async for _ in ws:
-                pass
-        finally:
-            request.app["ws"].discard(ws)
-
-        return ws
+        return web.json_response(text=self.collector.json)
 
     @property
     def routes(self):
-        return [web.get("/", self.index), web.get("/api", self.api), web.get("/ws", self.websocket)]
+        return [web.get("/", self.index), web.get("/api", self.api)]
