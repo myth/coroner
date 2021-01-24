@@ -142,10 +142,13 @@ class Collector:
 
                 for a, b, c in zip(hospitalized["data"], intensive_care["data"], ventilator["data"]):
                     day = stats.setdefault(a["date"], {})
+                    t = a["value"] if a["value"] else 0
+                    i = b["value"] if b["value"] else 0
+                    v = c["value"] if c["value"] else 0
                     # First few fields are null instead of 0 in VG API
-                    day["hospitalized.general.total"] = a["value"] if a["value"] else 0
-                    day["hospitalized.intensive_care.total"] = b["value"] if b["value"] else 0
-                    day["hospitalized.ventilator.total"] = c["value"] if c["value"] else 0
+                    day["hospitalized.general.total"] = t - i
+                    day["hospitalized.intensive_care.total"] = i - v
+                    day["hospitalized.ventilator.total"] = v
 
                 return stats
             else:
