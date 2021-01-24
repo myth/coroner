@@ -147,7 +147,7 @@ class Collector:
                     v = c["value"] if c["value"] else 0
                     # First few fields are null instead of 0 in VG API
                     day["hospitalized.general.total"] = t - i
-                    day["hospitalized.intensive_care.total"] = i - v
+                    day["hospitalized.intensive_care.total"] = max(i - v, 0)
                     day["hospitalized.ventilator.total"] = v
 
                 return stats
