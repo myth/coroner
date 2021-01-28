@@ -105,7 +105,7 @@ class Collector:
                 with open(path, "w") as f:
                     f.write(dumps(self.stats, indent=2, separators=(",", ": ")))
             except Exception as e:
-                self.stats["status"] = "error"
+                self._set_error()
 
                 LOG.error(f"Failed to update backup file {filename}: {e}")
 
@@ -193,6 +193,7 @@ class Collector:
             "current": self.timeseries.data[-1],
             "history": self.timeseries.data,
         }
+        self.json = dumps(self.stats)
 
         elapsed_time = time() - start_time
 
