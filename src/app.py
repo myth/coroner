@@ -16,7 +16,6 @@ basicConfig(level=DEBUG, format="%(asctime)s.%(msecs)03d %(levelname)s %(message
 class Coroner:
     def __init__(self):
         self.app = Application()
-        self.app["ws"] = WeakSet()
         self.ctrl = Controller()
 
         LOG.debug("Setting up routes")
@@ -45,11 +44,6 @@ class Coroner:
         LOG.debug("Shutting down Collector")
         await self.ctrl.collector.stop()
         LOG.debug("Collector session stopped")
-
-        LOG.debug("Closing websocket connections")
-        for ws in set(app["ws"]):
-            await ws.close(code=WSCloseCode.GOING_AWAY, message="Server shutdown")
-        LOG.debug("Websocket connections closed")
 
         LOG.info("Coroner stopped")
 

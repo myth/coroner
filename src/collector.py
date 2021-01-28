@@ -31,8 +31,8 @@ class Collector:
         self.backup_task = None
         self.running = False
         self.status = "ok"
-        self.stats = {}
-        self.timeseries = []
+        self._populate_timeseries({}, {})
+        self.json = dumps(self.stats)
 
         LOG.debug("Collector initialized")
 
@@ -85,7 +85,7 @@ class Collector:
             except Exception as e:
                 LOG.error(e)
                 print_exc(file=stdout)
-                self.stats["status"] = "error"
+                self._set_error()
 
             await sleep(COLLECT_INTERVAL)
 
@@ -113,17 +113,16 @@ class Collector:
         async with self.session.get(f"{VG_MAIN_STATS}") as response:
             if response.status == 200:
                 data = await response.json()
+                data = data["items"]
 
-                (
-                    deaths,
-                    cases,
-                    tests,
-                    positive,
-                    _,
-                    hospitalized,
-                    intensive_care,
-                    ventilator
-                ) = data["items"]
+                # (deaths, cases, tests, positive, trends, hosp, icu, ventilator, mutants)
+                deaths = data[0]
+                cases = data[1]
+                tests = data[2]
+                positive = data[3]
+                hospitalized = data[5]
+                intensive_care = data[6]
+                ventilator = data[7]
 
                 stats = {}
 
@@ -194,8 +193,11 @@ class Collector:
             "current": self.timeseries.data[-1],
             "history": self.timeseries.data,
         }
-        self.json = dumps(self.stats)
 
         elapsed_time = time() - start_time
 
         LOG.debug(f"Statistics updated in {elapsed_time:.3f}s")
+
+    def _set_error(self):
+        self.stats["status"] = "error"
+        self.json = dumps(self.stats)
