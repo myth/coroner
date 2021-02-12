@@ -17,7 +17,7 @@ from utils import get_now_local, get_today_local
 LOG = getLogger(__name__)
 
 BACKUP_INTERVAL = 3600 * 12
-COLLECT_INTERVAL = 3600  # Every hour
+COLLECT_INTERVAL = 3600
 
 # Data sources
 VG_MAIN_STATS = "https://redutv-api.vg.no/corona/v1/areas/country/key"
