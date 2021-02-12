@@ -164,8 +164,8 @@ class Collector:
 
                 for row in data:
                     day = stats.setdefault(row["date"], {})
-                    d1 = row["new"]["peopleDose1"]
-                    d2 = row["new"].get("peopleDose2", 0)
+                    d1 = row["new"].get("peopleDose1", 0) or 0
+                    d2 = row["new"].get("peopleDose2", 0) or 0
                     day["vaccinated.doses.today"] = d1 + d2
                     day["vaccinated.dose_1.today"] = d1
                     day["vaccinated.dose_2.today"] = d2
