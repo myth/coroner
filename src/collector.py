@@ -137,7 +137,7 @@ class Collector:
                 for a, b in zip(tests["data"], positive["data"]):
                     day = stats.setdefault(a["date"], {})
                     day["tests.today"] = a["value"]
-                    day["tests.positive"] = b["value"]
+                    day["tests.positive"] = float(b["value"])
 
                 for a, b, c in zip(hospitalized["data"], intensive_care["data"], ventilator["data"]):
                     day = stats.setdefault(a["date"], {})
