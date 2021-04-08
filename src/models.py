@@ -141,4 +141,5 @@ class TimeSeries:
             day["population.total"] = POPULATION
             day["dead.mortality_rate"] = round(day["dead.total"] / max(day["infected.total"], 1) * 100, 3)
             day["population.infected"] = round(day["infected.total"] / POPULATION * 100, 3)
-            day["population.vaccinated"] = round(day["vaccinated.dose_2.total"] / POPULATION * 100, 3)
+            day["population.vaccinated"] = round(day["vaccinated.dose_1.total"] / POPULATION * 100, 3)
+            day["population.vaccinated_full"] = round(day["vaccinated.dose_2.total"] / POPULATION * 100, 3)

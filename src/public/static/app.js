@@ -172,6 +172,7 @@ const updateCounters = c => {
     setElementContent('counter-dose-1', c['vaccinated.dose_1.total'])
     setElementContent('counter-dose-2', c['vaccinated.dose_2.total'])
     setElementContent('counter-vaccinated-in-population', `${c['population.vaccinated']} %`)
+    setElementContent('counter-vaccinated-in-population-full', `${c['population.vaccinated_full']} %`)
 }
 
 const bindDatePicker = (data, charts) => {
