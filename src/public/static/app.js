@@ -161,7 +161,6 @@ const updateCounters = c => {
     setElementContent('counter-dead-today', c['dead.today'])
     setElementContent('counter-tested', c['tests.total'])
     setElementContent('counter-tested-today', c['tests.today'])
-    setElementContent('counter-population', c['population.total'])
     setElementContent('counter-hospitalized', c['hospitalized.general.total'])
     setElementContent('counter-hospitalized-intensive-care', c['hospitalized.intensive_care.total'])
     setElementContent('counter-hospitalized-ventilator', c['hospitalized.ventilator.total'])
