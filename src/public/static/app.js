@@ -170,8 +170,10 @@ const updateCounters = c => {
     setElementContent('counter-tested-hit-ratio-mov-avg-7', `${c['tests.positive_avg_7']} %`)
     setElementContent('counter-dose-1', c['vaccinated.dose_1.total'])
     setElementContent('counter-dose-2', c['vaccinated.dose_2.total'])
-    setElementContent('counter-vaccinated-in-population', `${c['population.vaccinated']} %`)
-    setElementContent('counter-vaccinated-in-population-full', `${c['population.vaccinated_full']} %`)
+    setElementContent('counter-dose-3', c['vaccinated.dose_3.total'])
+    setElementContent('counter-vaccinated-in-population-1', `${c['population.vaccinated_1']} %`)
+    setElementContent('counter-vaccinated-in-population-2', `${c['population.vaccinated_2']} %`)
+    setElementContent('counter-vaccinated-in-population-3', `${c['population.vaccinated_3']} %`)
 }
 
 const bindDatePicker = (data, charts) => {
@@ -355,6 +357,12 @@ const createAllCharts = data => {
                 valueGetter: d => d['vaccinated.dose_2.today'],
                 borderColor: GREEN_BORDER,
                 backgroundColor: GREEN,
+            },
+            {
+                label: 'Dose 3',
+                valueGetter: d => d['vaccinated.dose_3.today'],
+                borderColor: ORANGE_BORDER,
+                backgroundColor: ORANGE,
             }]
         },
     ))
@@ -434,34 +442,34 @@ const createAllCharts = data => {
         }
     ))
 
-    charts.push(createChart(
-        data,
-        {
-            element: 'hospitalizedChange',
-            title: 'Daily Hospitalizations (Last 30 days)',
-            filter: d => d['hospitalized.general.total'] > 0,
-            window: 30,
-            stacked: true,
-            datasets: [{
-                label: 'Stable',
-                valueGetter: d => d['hospitalized.general.today'],
-                borderColor: PURPLE_BORDER,
-                backgroundColor: PURPLE,
-            },
-            {
-                label: 'Intensive Care',
-                valueGetter: d => d['hospitalized.intensive_care.today'],
-                borderColor: YELLOW_BORDER,
-                backgroundColor: YELLOW,
-            },
-            {
-                label: 'Ventilator',
-                valueGetter: d => d['hospitalized.ventilator.today'],
-                borderColor: RED_BORDER,
-                backgroundColor: RED,
-            }]
-        }
-    ))
+    // charts.push(createChart(
+    //     data,
+    //     {
+    //         element: 'hospitalizedChange',
+    //         title: 'Daily Hospitalizations (Last 30 days)',
+    //         filter: d => d['hospitalized.general.total'] > 0,
+    //         window: 30,
+    //         stacked: true,
+    //         datasets: [{
+    //             label: 'Stable',
+    //             valueGetter: d => d['hospitalized.general.today'],
+    //             borderColor: PURPLE_BORDER,
+    //             backgroundColor: PURPLE,
+    //         },
+    //         {
+    //             label: 'Intensive Care',
+    //             valueGetter: d => d['hospitalized.intensive_care.today'],
+    //             borderColor: YELLOW_BORDER,
+    //             backgroundColor: YELLOW,
+    //         },
+    //         {
+    //             label: 'Ventilator',
+    //             valueGetter: d => d['hospitalized.ventilator.today'],
+    //             borderColor: RED_BORDER,
+    //             backgroundColor: RED,
+    //         }]
+    //     }
+    // ))
 
     return charts
 }
