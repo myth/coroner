@@ -23,7 +23,7 @@ steps:
     image: appleboy/drone-scp
     settings:
         host: aegis.ulv.io
-        port: 22011
+        port: 20003
         username: root
         key:
           from_secret: ssh_key
@@ -40,7 +40,7 @@ steps:
     image: appleboy/drone-ssh
     settings:
         host: aegis.ulv.io
-        port: 22011
+        port: 20003
         username: root
         key:
           from_secret: ssh_key

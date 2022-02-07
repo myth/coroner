@@ -165,9 +165,11 @@ class Collector:
                     day = stats.setdefault(row["date"], {})
                     d1 = row["new"].get("peopleDose1", 0) or 0
                     d2 = row["new"].get("peopleDose2", 0) or 0
-                    day["vaccinated.doses.today"] = d1 + d2
+                    d3 = row["new"].get("boosters", 0) or 0
+                    day["vaccinated.doses.today"] = d1 + d2 + d3
                     day["vaccinated.dose_1.today"] = d1
                     day["vaccinated.dose_2.today"] = d2
+                    day["vaccinated.dose_3.today"] = d3
 
                 return stats
             else:

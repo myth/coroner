@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 aiohttp==3.7.4
 pytz==2019.3
+=======
+aiohttp
+pytz
+>>>>>>> b79dceebdb478ff02d6296dfed07a2bc9d823fd9

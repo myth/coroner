@@ -35,6 +35,7 @@ class TimeSeries:
         "vaccinated.doses.today": 0,
         "vaccinated.dose_1.today": 0,
         "vaccinated.dose_2.today": 0,
+        "vaccinated.dose_3.today": 0,
     }
 
     def __init__(self, raw_data: Dict[str, dict]):
@@ -70,7 +71,8 @@ class TimeSeries:
             "tests",
             "vaccinated.doses",
             "vaccinated.dose_1",
-            "vaccinated.dose_2"
+            "vaccinated.dose_2",
+            "vaccinated.dose_3",
         )
 
         for i, today in enumerate(self.data):
@@ -111,7 +113,8 @@ class TimeSeries:
             "tests.positive",
             "vaccinated.doses.today",
             "vaccinated.dose_1.today",
-            "vaccinated.dose_2.today"
+            "vaccinated.dose_2.today",
+            "vaccinated.dose_3.today",
         )
 
         for f in fields:
@@ -140,5 +143,6 @@ class TimeSeries:
             day["population.total"] = POPULATION
             day["dead.mortality_rate"] = round(day["dead.total"] / max(day["infected.total"], 1) * 100, 3)
             day["population.infected"] = round(day["infected.total"] / POPULATION * 100, 3)
-            day["population.vaccinated"] = round(day["vaccinated.dose_1.total"] / POPULATION * 100, 3)
-            day["population.vaccinated_full"] = round(day["vaccinated.dose_2.total"] / POPULATION * 100, 3)
+            day["population.vaccinated_1"] = round(day["vaccinated.dose_1.total"] / POPULATION * 100, 3)
+            day["population.vaccinated_2"] = round(day["vaccinated.dose_2.total"] / POPULATION * 100, 3)
+            day["population.vaccinated_3"] = round(day["vaccinated.dose_3.total"] / POPULATION * 100, 3)
