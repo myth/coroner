@@ -1,13 +1,10 @@
 from asyncio import create_task, sleep
-from datetime import datetime
 from json import dumps
 from logging import getLogger
 from os.path import abspath, dirname, join
-from random import randint
 from sys import stdout
 from time import time
 from traceback import print_exc
-from typing import List, Union
 
 from aiohttp import ClientSession
 
@@ -20,7 +17,7 @@ BACKUP_INTERVAL = 3600 * 12
 COLLECT_INTERVAL = 3600
 
 # Data sources
-VG_MAIN_STATS = "https://redutv-api.vg.no/corona/v1/areas/country/key"
+VG_MAIN_STATS = "https://redutv-api.vg.no/corona/v1/areas/country/key?deaths=fhi"
 VG_VACCINATION_STATS = "https://redutv-api.vg.no/corona/v1/areas/country/vaccinations/timeseries"
 
 
@@ -115,11 +112,13 @@ class Collector:
                 data = await response.json()
                 data = data["items"]
 
-                # (deaths, cases, tests, positive, trends, hosp, icu, ventilator, mutants)
-                deaths = data[0]
-                cases = data[1]
-                tests = data[2]
-                positive = data[3]
+                # (admissions, adm-trend, deaths, cases, cases-trend, hosp, icu, ventilator)
+                deaths = data[2]
+                cases = data[3]
+                # Taken out from data 01.02.22
+                tests = {"data": []}
+                # Taken out from data 01.02.22
+                positive = {"data": []}
                 hospitalized = data[5]
                 intensive_care = data[6]
                 ventilator = data[7]

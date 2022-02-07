@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
-from json import dumps
+from datetime import date
 from logging import getLogger
-from typing import Any, Dict, List, NamedTuple, Union
+from typing import Dict
 
 from utils import create_date_range, percent_change
 
 LOG = getLogger(__name__)
-POPULATION: int = 5367580
+POPULATION: int = 5415166
 START: date = date(2020, 2, 24)
 
 
