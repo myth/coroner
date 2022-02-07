@@ -1,8 +1,6 @@
 from logging import basicConfig, getLogger, DEBUG
 from os.path import abspath, dirname, join
-from weakref import WeakSet
 
-from aiohttp import WSCloseCode
 from aiohttp.web import run_app, Application
 
 from ctrl import Controller

@@ -1,4 +1,2 @@
 aiohttp==3.7.4
-numpy==1.18.2
 pytz==2019.3
-scipy==1.4.1
